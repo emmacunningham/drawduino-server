@@ -1,19 +1,27 @@
+console.log("JS INIT!!");
+
 define(function() {
   function Example2() {
     this.board = null;
     this.led = null;
+    console.log("Example 2 initing");
   }
   
   Example2.handle = function() {
     var that = this;
+    console.log("Attempting to connect!")
     require(['scripts/libs/Noduino.js', 'scripts/libs/Noduino.Socket.js', 'scripts/libs/Logger.js'], function(NoduinoObj, Connector, Logger) {
-      var Noduino = new NoduinoObj({debug: false, host: 'http://localhost:8090'}, Connector, Logger);
+      console.log("Require loaded");
+      var Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090'}, Connector, Logger);
+      console.log("Noduino",Noduino);
       Noduino.connect(function(err, board) {
         $('#e2-exampleConnection .alert').addClass('hide'); 
         if (err) {
-          $('#e2-exampleConnection .alert-error').removeClass('hide'); }
-        else {
+          $('#e2-exampleConnection .alert-error').removeClass('hide'); 
+          console.log("Error!")
+        } else {
           $('#e2-exampleConnection .alert-success').removeClass('hide'); 
+          console.log("Success!")
           that.board = board;
         }
       });

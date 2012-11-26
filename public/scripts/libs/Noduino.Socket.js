@@ -51,11 +51,14 @@ define(function(require, exports, module) {
     /** This is Client code: This works in your web browser */
     if (!this.io) {
       this.io = io.connect(this.options.host); 
+      console.log("Connect to IO: ",this.io);
       this.boards[0] = Board;
     }
     
     var that  = this; 
     var board = this.boards[0];
+
+    console.log("Boards:", board);
     
     this.io.on('response', function(data) { 
       var err = data;
@@ -83,20 +86,33 @@ define(function(require, exports, module) {
   };
 
   SocketNoduino.prototype.connect = function(options, next) {
+    console.log("Attempting to connect via socket");
     if (!next) { 
       next = options; } 
     if (!this.callbacks['board.connect']) {
       this.callbacks['board.connect'] = []; }
     
     this.callbacks['board.connect'].push(next);
-    this.log('sending command through socket');
+    console.log('sending command through socket');
     this.pushSocket('board.connect');
     
-    return;
+    var that = this;
+    var board = new Board({'debug': this.options.debug || false}, function(err, board) {
+      if (err) { return next(new Error('Unable to connect')); }
+      
+      // Disabled multi board support now, but keep in mind…
+      that.boards = [board]; 
+      that.board  = 0;
+      
+      that.current().on('ready', function(){
+        next(null, board); });
+    });
+
+    return next(null, board);
   }
   
   SocketNoduino.prototype.pushSocket = function(type, data) {
-    this.log('socket-write', type + ': ' + JSON.stringify(data));
+    console.log('socket-write', type + ': ' + JSON.stringify(data));
     this.io.emit(type, data);
   }
   
@@ -139,8 +155,8 @@ define(function(require, exports, module) {
   SocketNoduino.prototype.digitalWrite = function(pin, val, next) {
   	pin = this.normalizePin(pin);
   	val = this.normalizeVal(val);
-  	this.log('info', 'analogWrite to pin ' + pin + ': ' + val);
-  	this.write('03' + pin + val);
+  	this.log('info', 'digitalWrite to pin ' + pin + ': ' + val);
+  	this.write('01' + pin + val);
     
     if (next) {
       next(null, pin); }
