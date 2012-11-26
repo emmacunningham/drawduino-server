@@ -4,12 +4,10 @@ define(['./Board.js'], function (objBoard) {
    * @param object options
    */
   function Noduino(options, Connector, Logger) { 
-    console.log("Connector: ",Connector)
     if (false === (this instanceof Noduino)) {
       return new Noduino(options); }
       
     this.c            = new Connector(options)
-    console.log("Connector (c) : ",this.c)
     this.logger       = new Logger(options);
     this.options      = options;    
     this.options.type = this.c.connection;
@@ -51,17 +49,13 @@ define(['./Board.js'], function (objBoard) {
   }
 
   Noduino.prototype.connect = function(options, callback) {
-    console.log('connecting to noduino');
+    this.log('connecting to noduino');
     
     if (!callback) {
       callback = options; options = {}; }
     var that = this;
     this.c.connect(options, function(err, board) {
-      if (err) { 
-        console.log("@Noduino: Error!!")
-        return callback(err); 
-      }    
-      console.log("@Noduino: Success")
+      if (err) { return callback(err); }    
       that.connected = true;
       callback(null, new objBoard(options, that.c));
     });
