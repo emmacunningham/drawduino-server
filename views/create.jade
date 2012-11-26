@@ -1,0 +1,51 @@
+header
+  .page-header
+    h1 Draw something
+
+  .row.interface#controls
+    .span12
+      .btn-toolbar(style="margin-bottom: 9px")
+        .btn-group
+          a.btn(href="#")#connect
+            i.icon-refresh
+            |  Connect to Arduino
+        |
+        .btn-group
+          .btn.btn-dir#btn-04 &laquo;&laquo;
+        |
+        .btn-group#leds
+          a.btn.disabled#led-1 #1
+          a.btn.disabled#led-2 #2
+          a.btn.disabled#led-3 #3
+          a.btn.disabled#led-4 #4
+          a.btn.disabled#led-5 #5
+          a.btn.disabled#led-6 #6
+        |
+        .btn-group
+          .btn.btn-dir#btn-02 &raquo;&raquo;
+        .btn-group
+          input.range#interval-slide(type="range", min="0", max="1024", step="1", value="320", disabled="disabled")
+          input.interval#interval-value(type="input", value="320ms",disabled="disabled")
+  .row.info#connection-status
+    .span12
+      .alert.alert-info Please connect to your Arduino using the button.
+      .alert.hide.alert-error Unable to connect to Arduino!
+      .alert.hide.alert-success Connection to Arduino established!
+  .row.debug
+    .span12
+      pre#connection-log
+        .item $ > Not connected to noduino!
+  .row
+    .span12
+      p This interface is defined in
+        code views/example-walkLED.jade
+        | , all needed JavaScript is stored in
+        code public/scripts/app.walkLED.js
+        |  using
+        a(href="http://requirejs.org/") RequireJS
+        |  for loading dependencies. Please see RequireJS's manual for loading your scripts. Logging is done with the customized
+        code Logger.HTML.js
+        |  in
+        code scripts/libs/
+        | .
+
