@@ -16,16 +16,29 @@ require( [
     var Noduino = null;
 
     var INPUT_FACTOR = .25;
-    var drawObjX = { prev : undefined, cur : undefined, delta : 0 };
-    var drawObjY = { prev : undefined, cur : undefined, delta : 0 };
 
-    var createObjects = function(board) {
-      // Potentiometer X
-      board.withAnalogInput( { pin: 'A0' }, createInputHandler( drawObjX ) );
-      board.withAnalogInput( { pin: 'A5' }, createInputHandler( drawObjY ) );
-    };
+    var setupUi = function() {
+      $('#erase').click( function() {
+        reset();
+      });
+    }
 
-    var createInputHandler = function( drawObj ) {
+    var pollForBoard = function() {
+      // Poll indefinitely so we can connect and disconnect at will.
+      // To-do: Detect disconnection.
+      var pollInterval = setInterval( function() {
+        if (!Noduino || !Noduino.connected) {
+          Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
+          Noduino.connect(function(err, board) {
+            // Listen to input.
+            board.withAnalogInput( { pin: 'A0' }, createBoardInputHandler( drawObjX ) );
+            board.withAnalogInput( { pin: 'A5' }, createBoardInputHandler( drawObjY ) );
+          });
+        }
+      }, 1000 );
+    }
+
+    var createBoardInputHandler = function( drawObj ) {
       return function( err, AnalogInput ) {
         AnalogInput.on('change', function(a) {
           var potValue = AnalogInput.value;
@@ -38,30 +51,14 @@ require( [
       }
     }
 
+    var drawObjX;
+    var drawObjY;
+
     var drawBuffer = function() {
       if ( drawObjX.delta != 0 || drawObjY.delta != 0 ) {
         moveLine( drawObjX.delta, drawObjY.delta );
         drawObjX.delta = drawObjY.delta = 0;
       }
-    }
-
-    // To-do: Set up UI buttons.
-    var setupUi = function() {
-
-    }
-
-    var pollForBoard = function() {
-      // Poll indefinitely so we can connect and disconnect at will.
-      // To-do: Detect disconnection.
-      var pollInterval = setInterval( function() {
-        if ( Noduino ) console.log( Noduino.connected );
-        if (!Noduino || !Noduino.connected) {
-          Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
-          Noduino.connect(function(err, board) {
-            createObjects(board);
-          });
-        }
-      }, 1000 );
     }
 
     // History vars.
@@ -74,7 +71,6 @@ require( [
       startTime = t.getTime();
       time = Math.min( time, 1000 );
       history.push( [ time, x, y ] );
-      //console.log(history)
     }
 
     // Drawing vars.
@@ -96,9 +92,11 @@ require( [
       storeHistory();
     }
 
-    var erase = function() {
+    var reset = function() {
       processing.background( 250 );
       history = [];
+      drawObjX = { prev : undefined, cur : undefined, delta : 0 };
+      drawObjY = { prev : undefined, cur : undefined, delta : 0 };
       var d = new Date();
       startTime = d.getTime();
     }
@@ -113,7 +111,7 @@ require( [
       ctx = canvas.getContext( '2d' );
       processing = new Processing( canvas );
       processing.size( w, h );
-      erase();
+      reset();
       setLine( Math.round( w * .5 ), Math.round( h * .5 ) );
 
       // UI,
@@ -126,9 +124,10 @@ require( [
       pollForBoard();
 
       // Testing.
-      $( document ).click( function( e ) {
+      $( '#etchasketch' ).click( function( e ) {
         var range = 50;
-        moveLine( Math.round( Math.random() * range - range * .5 ), Math.round( Math.random() * range - range * .5 ) );
+        drawObjX.delta += Math.round( Math.random() * range - range * .5 );
+        drawObjY.delta += Math.round( Math.random() * range - range * .5 );
       });
     });
 
