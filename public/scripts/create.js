@@ -14,19 +14,63 @@ require( [
     // Setup Arduino board inputs and outputs.
     // Here, tell it what pins our knobs are on.
     var Noduino = null;
+    
+    var prevX, prevY = undefined;
+    var curX, curY;
+    var deltaX, deltaY;
+    
     var createObjects = function(board) {
       console.log(board)
 
+      // Potentiometer X
       board.withAnalogInput({pin:  'A0'}, function(err, AnalogInput) {
 
         console.log("go");
 
         AnalogInput.on('change', function(a) {
-          console.log(AnalogInput.value);
           var potValue = AnalogInput.value;
-          $('#pot-value').text(potValue);
+          //console.log('x: ' + potValue);
+          $('#pot-value-left').text('x: ' + potValue);
+
+          curX = potValue;
+
+          if (prevX == undefined) {
+            prevX = curX;
+          }
+                    
+          deltaX = (curX - prevX) * .25;
+          
+          prevX = curX;
+          
+          moveLine(deltaX, 0);          
+                    
         });
       });
+      
+      // Potentiometer Y
+      board.withAnalogInput({pin:  'A5'}, function(err, AnalogInput) {
+
+        console.log("go");
+
+        AnalogInput.on('change', function(a) {
+          var potValue = AnalogInput.value;
+          //console.log('y: ' + potValue);
+          $('#pot-value-right').text('y: ' + potValue);
+          
+          curY = potValue;
+
+          if (prevY == undefined) {
+            prevY = curY;
+          }
+                    
+          deltaY = (curY - prevY) * .25;
+          
+          prevY = curY;
+          
+          moveLine(0, deltaY);              
+          
+        });
+      });      
 
     };
 
@@ -54,7 +98,7 @@ require( [
       startTime = t.getTime();
       time = Math.min( time, 1000 );
       history.push( [ time, x, y ] );
-      console.log(history)
+      //console.log(history)
     }
 
     // Drawing vars.
