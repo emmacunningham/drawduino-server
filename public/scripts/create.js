@@ -15,64 +15,35 @@ require( [
     // Here, tell it what pins our knobs are on.
     var Noduino = null;
 
-    var prevX, prevY = undefined;
-    var curX, curY;
-    var deltaX, deltaY;
+    var INPUT_FACTOR = .25;
+    var drawObjX = { prev : undefined, cur : undefined, delta : 0 };
+    var drawObjY = { prev : undefined, cur : undefined, delta : 0 };
 
     var createObjects = function(board) {
-      console.log(board)
-
       // Potentiometer X
-      board.withAnalogInput({pin:  'A0'}, function(err, AnalogInput) {
-
-        console.log("go");
-
-        AnalogInput.on('change', function(a) {
-          var potValue = AnalogInput.value;
-          //console.log('x: ' + potValue);
-          $('#pot-value-left').text('x: ' + potValue);
-
-          curX = potValue;
-
-          if (prevX == undefined) {
-            prevX = curX;
-          }
-
-          deltaX = (curX - prevX) * .25;
-
-          prevX = curX;
-
-          moveLine(deltaX, 0);
-
-        });
-      });
-
-      // Potentiometer Y
-      board.withAnalogInput({pin:  'A5'}, function(err, AnalogInput) {
-
-        console.log("go");
-
-        AnalogInput.on('change', function(a) {
-          var potValue = AnalogInput.value;
-          //console.log('y: ' + potValue);
-          $('#pot-value-right').text('y: ' + potValue);
-
-          curY = potValue;
-
-          if (prevY == undefined) {
-            prevY = curY;
-          }
-
-          deltaY = (curY - prevY) * .25;
-
-          prevY = curY;
-
-          moveLine(0, deltaY);
-
-        });
-      });
-
+      board.withAnalogInput( { pin: 'A0' }, createInputHandlerFor( drawObjX ) );
+      board.withAnalogInput( { pin: 'A5' }, createInputHandlerFor( drawObjY ) );
     };
+
+    var createInputHandlerFor = function( drawObj ) {
+      return function( err, AnalogInput ) {
+        AnalogInput.on('change', function(a) {
+          var potValue = AnalogInput.value;
+          drawObj.cur = potValue;
+          if ( drawObj.prev != undefined ) {
+            drawObj.delta += ( drawObj.cur - drawObj.prev) * INPUT_FACTOR;
+          }
+          drawObj.prev = drawObj.cur;
+        });
+      }
+    }
+
+    var drawBuffer = function() {
+      if ( drawObjX.delta != 0 || drawObjY.delta != 0 ) {
+        moveLine( drawObjX.delta, drawObjY.delta );
+        drawObjX.delta = drawObjY.delta = 0;
+      }
+    }
 
     // To-do: Set up UI buttons.
     var setupUi = function() {
@@ -81,7 +52,6 @@ require( [
         if (!Noduino || !Noduino.connected) {
           Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
           Noduino.connect(function(err, board) {
-            console.log("connected")
             createObjects(board);
           });
         }
@@ -140,7 +110,11 @@ require( [
       erase();
       setLine( Math.round( w * .5 ), Math.round( h * .5 ) );
 
+      // UI,
       setupUi();
+
+      // Drawing timer.
+      setInterval( drawBuffer, 100 );
 
       // Testing.
       $( document ).click( function( e ) {
