@@ -11,17 +11,24 @@ require( [
   ],
   function( $, dropdown, prettify, processing, NoduinoObj, Connector, Logger ) {
 
-    // Setup Arduino board inputs and outputs.
-    // Here, tell it what pins our knobs are on.
-    var Noduino = null;
+    // Set up UI.
 
-    var INPUT_FACTOR = .25;
+    var $turtle;
+    var canvasX, canvasY;
 
     var setupUi = function() {
+      $turtle = $( '#turtle' );
+      var $canvas =  $( '#etchasketch' );
+      canvasX = $canvas.offset().left;
+      canvasY = $canvas.offset().top;
       $('#erase').click( function() {
         reset();
       });
     }
+
+    // Set up Noduino.
+
+    var Noduino = null;
 
     var pollForBoard = function() {
       // Poll indefinitely so we can connect and disconnect at will.
@@ -38,6 +45,8 @@ require( [
       }, 1000 );
     }
 
+    var INPUT_FACTOR = .25;
+
     var createBoardInputHandler = function( drawObj ) {
       return function( err, AnalogInput ) {
         AnalogInput.on('change', function(a) {
@@ -51,17 +60,8 @@ require( [
       }
     }
 
-    var drawObjX;
-    var drawObjY;
+    // History.
 
-    var drawBuffer = function() {
-      if ( drawObjX.delta != 0 || drawObjY.delta != 0 ) {
-        moveLine( drawObjX.delta, drawObjY.delta );
-        drawObjX.delta = drawObjY.delta = 0;
-      }
-    }
-
-    // History vars.
     var history = [];
     var startTime;
 
@@ -73,7 +73,10 @@ require( [
       history.push( [ time, x, y ] );
     }
 
-    // Drawing vars.
+    // Drawing.
+
+    var drawObjX;
+    var drawObjY;
     var canvas, ctx, processing;
     var w = 1000, h = 1000;
     var x = 0, y = 0;
@@ -84,6 +87,7 @@ require( [
       x += nx;
       y += ny;
       storeHistory();
+      $turtle.offset( { left: canvasX + x - 4, top: canvasY + y - 4 } );
     }
 
     var setLine = function( nx, ny ) {
@@ -91,6 +95,15 @@ require( [
       y = ny;
       storeHistory();
     }
+
+    var drawBuffer = function() {
+      if ( drawObjX.delta != 0 || drawObjY.delta != 0 ) {
+        moveLine( drawObjX.delta, drawObjY.delta );
+        drawObjX.delta = drawObjY.delta = 0;
+      }
+    }
+
+    // Utility.
 
     var reset = function() {
       processing.background( 250 );
@@ -104,6 +117,8 @@ require( [
     var takeSnapshot = function() {
       return canvas.toDataURL();
     }
+
+    // Init.
 
     $(document).ready(function(e) {
       // Set up processing.
@@ -125,11 +140,21 @@ require( [
 
       // Testing.
       $( '#etchasketch' ).click( function( e ) {
-        var range = 50;
-        drawObjX.delta += Math.round( Math.random() * range - range * .5 );
-        drawObjY.delta += Math.round( Math.random() * range - range * .5 );
+        var range = 200;
+        testInput( drawObjX, Math.round( Math.random() * range - range * .5 ) );
+        testInput( drawObjY, Math.round( Math.random() * range - range * .5 ) );
       });
     });
+
+    // Testing.
+
+    var testInput = function( drawObj, value ) {
+      drawObj.cur = value;
+      if ( drawObj.prev != undefined ) {
+        drawObj.delta += ( drawObj.cur - drawObj.prev) * INPUT_FACTOR;
+      }
+      drawObj.prev = drawObj.cur;
+    }
 
   }
 );
