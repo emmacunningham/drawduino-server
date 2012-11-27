@@ -21,11 +21,11 @@ require( [
 
     var createObjects = function(board) {
       // Potentiometer X
-      board.withAnalogInput( { pin: 'A0' }, createInputHandlerFor( drawObjX ) );
-      board.withAnalogInput( { pin: 'A5' }, createInputHandlerFor( drawObjY ) );
+      board.withAnalogInput( { pin: 'A0' }, createInputHandler( drawObjX ) );
+      board.withAnalogInput( { pin: 'A5' }, createInputHandler( drawObjY ) );
     };
 
-    var createInputHandlerFor = function( drawObj ) {
+    var createInputHandler = function( drawObj ) {
       return function( err, AnalogInput ) {
         AnalogInput.on('change', function(a) {
           var potValue = AnalogInput.value;
@@ -47,15 +47,20 @@ require( [
 
     // To-do: Set up UI buttons.
     var setupUi = function() {
-      $('#connect').click(function(e) {
-        e.preventDefault();
+
+    }
+
+    var pollForBoard = function() {
+      var pollInterval = setInterval( function() {
         if (!Noduino || !Noduino.connected) {
           Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
           Noduino.connect(function(err, board) {
             createObjects(board);
           });
+        } else {
+          clearInterval( pollInterval );
         }
-      });
+      }, 1000 );
     }
 
     // History vars.
@@ -115,6 +120,9 @@ require( [
 
       // Drawing timer.
       setInterval( drawBuffer, 100 );
+
+      // Try to connect to board.
+      pollForBoard();
 
       // Testing.
       $( document ).click( function( e ) {

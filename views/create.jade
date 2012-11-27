@@ -1,19 +1,6 @@
 header
   .page-header
     h1 Draw something
-
-  .row.interface#controls
-    .span12
-      .btn-toolbar(style="margin-bottom: 9px")
-        .btn-group
-          a.btn(href="#")#connect
-            i.icon-refresh
-            |  Connect
-  .row.info#connection-status
-    .span12
-      .alert.alert-info Please connect to your Arduino using the button.
-      .alert.hide.alert-error Unable to connect to Arduino!
-      .alert.hide.alert-success Connection to Arduino established!
   .row.debug
     .span12
       pre#connection-log
@@ -33,9 +20,3 @@ header
         |  in
         code scripts/libs/
         | .
-  .row
-    #pot-value-left
-      p Left
-  .row
-    #pot-value-right
-      p Right
