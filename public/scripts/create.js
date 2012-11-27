@@ -14,6 +14,17 @@ require( [
     // Set up UI buttons.
 
     // History vars.
+    var history = [];
+    var startTime;
+
+    var storeHistory = function() {
+      var t = new Date();
+      var time = t.getTime() - startTime;
+      startTime = t.getTime();
+      time = Math.min( time, 1000 );
+      history.push( [ time, x, y ] );
+      console.log(history)
+    }
 
     // Drawing vars.
     var canvas, ctx, processing;
@@ -25,18 +36,20 @@ require( [
       processing.line( x, y, x + nx, y + ny );
       x += nx;
       y += ny;
-      // Move history.
+      storeHistory();
     }
 
     var setLine = function( nx, ny ) {
       x = nx;
       y = ny;
-      // Set history.
+      storeHistory();
     }
 
     var erase = function() {
       processing.background( 250 );
-      // Clear history.
+      history = [];
+      var d = new Date();
+      startTime = d.getTime();
     }
 
     var takeSnapshot = function() {
@@ -52,9 +65,10 @@ require( [
       setLine( Math.round( w * .5 ), Math.round( h * .5 ) );
 
       // Testing.
-      moveLine( 20, 54 );
-      moveLine( 102, 33 );
-      console.log(takeSnapshot())
+      $( document ).click( function( e ) {
+        var range = 50;
+        moveLine( Math.round( Math.random() * range - range * .5 ), Math.round( Math.random() * range - range * .5 ) );
+      });
     });
   }
 );
