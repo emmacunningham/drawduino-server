@@ -8,7 +8,7 @@ define(['kickstart'], function (kickstart) {
   });
 
   srv.all('/create', function(req, res) {
-    res.render('create', { scripts : [ 'drawduino.js' ] } );
+    res.render('create', { script : 'create' } );
   });
 
   srv.all('/about', function(req, res) {

@@ -1,14 +1,13 @@
 !!! 5
 html(lang="en")
   head
-    title Arduino control nodeuino for JavaScript and Node.js with WebSockets and HTML5
+    title Happy Holidays from Left Field Labs
     link(rel="stylesheet", href="styles/bootstrap/init.css")
     link(rel="stylesheet", href="styles/prettify.css")
     link(rel="stylesheet", href="styles/init.css")
     // Dynamically include template-defined scripts.
-    if ( typeof( scripts ) != 'undefined' )
-      each script in scripts
-        script(data-main="scripts/#{script}", type="text/javascript", src="scripts/vendor/require-jquery.js")
+    if ( typeof( script ) != 'undefined' )
+    script(data-main="scripts/#{script}", type="text/javascript", src="scripts/vendor/require-jquery.js")
     script(type="text/javascript", src="http://localhost:8090/socket.io/socket.io.js")
   body
     .navbar.navbar-fixed-top(style="z-index: 4;position:absolute;")
