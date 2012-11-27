@@ -51,14 +51,15 @@ require( [
     }
 
     var pollForBoard = function() {
+      // Poll indefinitely so we can connect and disconnect at will.
+      // To-do: Detect disconnection.
       var pollInterval = setInterval( function() {
+        if ( Noduino ) console.log( Noduino.connected );
         if (!Noduino || !Noduino.connected) {
           Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
           Noduino.connect(function(err, board) {
             createObjects(board);
           });
-        } else {
-          clearInterval( pollInterval );
         }
       }, 1000 );
     }
