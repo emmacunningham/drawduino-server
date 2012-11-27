@@ -20,3 +20,19 @@ header
         .item $ > Not connected to noduino!
 
   canvas#etchasketch
+  .row
+    .span12
+      p This interface is defined in
+        code views/example-walkLED.jade
+        | , all needed JavaScript is stored in
+        code public/scripts/app.walkLED.js
+        |  using
+        a(href="http://requirejs.org/") RequireJS
+        |  for loading dependencies. Please see RequireJS's manual for loading your scripts. Logging is done with the customized
+        code Logger.HTML.js
+        |  in
+        code scripts/libs/
+        | .
+  .row
+    #pot-value
+      p Hello

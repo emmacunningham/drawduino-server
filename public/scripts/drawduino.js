@@ -1,8 +1,7 @@
 var pv = 'scripts/vendor/';
 var pl = 'scripts/libs/';
 require(["jquery", pv + "dropdown.js", pv + "prettify.js", pl + 'Noduino.js', pl + 'Noduino.Socket.js', pl + 'Logger.HTML.js'], function($, dd, p, NoduinoObj, Connector, Logger) {
-  var Noduino = null;
-
+  var Noduino = null;  
 
   // Setup Arduino board inputs and outputs.
   // Here, tell it what pins our knobs are on.
@@ -15,6 +14,8 @@ require(["jquery", pv + "dropdown.js", pv + "prettify.js", pl + 'Noduino.js', pl
 
       AnalogInput.on('change', function(a) {
         console.log(AnalogInput.value);
+        var potValue = AnalogInput.value;
+        $('#pot-value').text(potValue);
       });
     });
 
