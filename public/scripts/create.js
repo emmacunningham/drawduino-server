@@ -11,7 +11,38 @@ require( [
   ],
   function( $, dropdown, prettify, processing, NoduinoObj, Connector, Logger ) {
 
-    // Set up UI buttons.
+    // Setup Arduino board inputs and outputs.
+    // Here, tell it what pins our knobs are on.
+    var Noduino = null;
+    var createObjects = function(board) {
+      console.log(board)
+
+      board.withAnalogInput({pin:  'A0'}, function(err, AnalogInput) {
+
+        console.log("go");
+
+        AnalogInput.on('change', function(a) {
+          console.log(AnalogInput.value);
+          var potValue = AnalogInput.value;
+          $('#pot-value').text(potValue);
+        });
+      });
+
+    };
+
+    // To-do: Set up UI buttons.
+    var setupUi = function() {
+      $('#connect').click(function(e) {
+        e.preventDefault();
+        if (!Noduino || !Noduino.connected) {
+          Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
+          Noduino.connect(function(err, board) {
+            console.log("connected")
+            createObjects(board);
+          });
+        }
+      });
+    }
 
     // History vars.
     var history = [];
@@ -57,6 +88,7 @@ require( [
     }
 
     $(document).ready(function(e) {
+      // Set up processing.
       canvas = document.getElementById( "etchasketch" );
       ctx = canvas.getContext( '2d' );
       processing = new Processing( canvas );
@@ -64,11 +96,14 @@ require( [
       erase();
       setLine( Math.round( w * .5 ), Math.round( h * .5 ) );
 
+      setupUi();
+
       // Testing.
       $( document ).click( function( e ) {
         var range = 50;
         moveLine( Math.round( Math.random() * range - range * .5 ), Math.round( Math.random() * range - range * .5 ) );
       });
     });
+
   }
 );
