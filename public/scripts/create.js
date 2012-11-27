@@ -14,11 +14,11 @@ require( [
     // Setup Arduino board inputs and outputs.
     // Here, tell it what pins our knobs are on.
     var Noduino = null;
-    
+
     var prevX, prevY = undefined;
     var curX, curY;
     var deltaX, deltaY;
-    
+
     var createObjects = function(board) {
       console.log(board)
 
@@ -37,16 +37,16 @@ require( [
           if (prevX == undefined) {
             prevX = curX;
           }
-                    
+
           deltaX = (curX - prevX) * .25;
-          
+
           prevX = curX;
-          
-          moveLine(deltaX, 0);          
-                    
+
+          moveLine(deltaX, 0);
+
         });
       });
-      
+
       // Potentiometer Y
       board.withAnalogInput({pin:  'A5'}, function(err, AnalogInput) {
 
@@ -56,21 +56,21 @@ require( [
           var potValue = AnalogInput.value;
           //console.log('y: ' + potValue);
           $('#pot-value-right').text('y: ' + potValue);
-          
+
           curY = potValue;
 
           if (prevY == undefined) {
             prevY = curY;
           }
-                    
+
           deltaY = (curY - prevY) * .25;
-          
+
           prevY = curY;
-          
-          moveLine(0, deltaY);              
-          
+
+          moveLine(0, deltaY);
+
         });
-      });      
+      });
 
     };
 
