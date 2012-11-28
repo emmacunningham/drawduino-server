@@ -29,6 +29,9 @@ require( [
         shake();
         reset();
       });
+       $('#undo').click( function() {
+        undo();
+      });
       $('#undo').mousedown( function() {
         startUndoing();
       });
@@ -37,6 +40,9 @@ require( [
       });
       $('#undo').mouseout( function() {
         stopUndoing();
+      });
+      $('#redo').click( function() {
+        redo();
       });
       $('#redo').mousedown( function() {
         startRedoing();
