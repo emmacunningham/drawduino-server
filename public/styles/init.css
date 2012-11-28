@@ -98,4 +98,4 @@ label.label{display:inline;}
 .interval{margin-bottom:0px;position:relative;top:-9px;margin-left:12px;width:60px;}
 .collectedTags{margin-top:14px;}
 #connection-log{height:358px;overflow:hidden;padding-top:4px;overflow-x:hidden;margin-bottom:16px;}
-#turtle{position:absolute;z-index:100;width:9px;height:9px;background-image:url('../images/turtle.png');}
+#turtle{position:absolute;z-index:100;width:15px;height:15px;background-image:url('../images/turtle.png');}
