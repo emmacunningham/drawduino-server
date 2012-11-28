@@ -3,7 +3,7 @@ header
     h1 Draw something
   .row.interface#controls
     .span12
-      .btn-toolbar(style="margin-bottom: 9px")
+      .btn-toolbar(style="margin-bottom: 9px")#toolbar
         .btn-group
           a.btn(href="javascript:void(0)")#undo
             i.icon-backward
@@ -11,6 +11,9 @@ header
           a.btn(href="javascript:void(0)")#redo
             i.icon-forward
             | Fast-forward
+          a.btn(href="javascript:void(0)")#playDemo
+            i.icon-forward
+            | Play demo
         .btn-group.pull-right
           a.btn(href="javascript:void(0)")#erase
             i.icon-refresh
