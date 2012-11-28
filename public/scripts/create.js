@@ -47,6 +47,7 @@ require( [
       $('#redo').mouseout( function() {
         stopRedoing();
       });
+      updateHistoryUi();
     }
 
     // Set up Noduino.
@@ -98,6 +99,7 @@ require( [
       var data = [ time, x, y ];
       history.push( data );
       redoHistoryArr = [];
+      updateHistoryUi();
     }
 
     var getSerializedHistory = function() {
@@ -110,6 +112,7 @@ require( [
       if ( history.length > 1 ) {
         redoHistoryArr.push( history.pop() );
         drawHistory( history );
+        updateHistoryUi();
       }
     }
 
@@ -117,6 +120,7 @@ require( [
       if ( redoHistoryArr.length > 0 ) {
         history.push( redoHistoryArr.pop() );
         drawHistory( history );
+        updateHistoryUi();
       }
     }
 
@@ -128,6 +132,13 @@ require( [
         if ( index == 0 ) setLine( data[ 1 ], data[ 2 ] );
         else moveLineTo( data[ 1 ], data[ 2 ] );
       }
+    }
+
+    var updateHistoryUi = function() {
+      if ( history.length > 1 ) $('#undo').removeClass( 'disabled' );
+      else $('#undo').addClass( 'disabled' );
+      if ( redoHistoryArr.length > 0 ) $('#redo').removeClass( 'disabled' );
+      else $('#redo').addClass( 'disabled' );
     }
 
     var undoInterval;
@@ -224,6 +235,7 @@ require( [
       drawObjY = { prev : undefined, cur : undefined, delta : 0 };
       var d = new Date();
       startTime = d.getTime();
+      updateHistoryUi();
     }
 
     var takeSnapshot = function() {
