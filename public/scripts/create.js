@@ -4,6 +4,7 @@ require( [
   "jquery",
     vendor + "dropdown.js",
     vendor + "prettify.js",
+    vendor + "jquery-ui-1.9.2.custom.min.js",
     vendor + "processing-1.4.1.min.js",
     libs + 'Noduino.js',
     libs + 'Noduino.Socket.js',
@@ -25,6 +26,7 @@ require( [
       canvasX = $canvas.offset().left;
       canvasY = $canvas.offset().top;
       $('#erase').click( function() {
+        shake();
         reset();
       });
       $('#undo').mousedown( function() {
@@ -209,6 +211,10 @@ require( [
     }
 
     // Utility.
+
+    var shake = function() {
+      $( 'body' ).effect( "shake", { direction: 'left', times: 3 }, 600 );
+    }
 
     var reset = function() {
       processing.background( 250 );
