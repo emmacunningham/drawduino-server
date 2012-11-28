@@ -30,7 +30,7 @@ require( [
         reset();
       });
        $('#undo').click( function() {
-        undo();
+        undoHistory();
       });
       $('#undo').mousedown( function() {
         startUndoing();
@@ -42,7 +42,7 @@ require( [
         stopUndoing();
       });
       $('#redo').click( function() {
-        redo();
+        redoHistory();
       });
       $('#redo').mousedown( function() {
         startRedoing();
