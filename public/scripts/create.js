@@ -75,7 +75,8 @@ require( [
       var time = t.getTime() - startTime;
       startTime = t.getTime();
       time = Math.min( time, 1000 );
-      history.push( [ time, x, y ] );
+      var data = [ time, x, y ];
+      history.push( data );
     }
 
     var getSerializedHistory = function() {
@@ -93,6 +94,7 @@ require( [
     }
 
     var playHistoryStep = function( index ) {
+      // Data structure is [ time, x, y ]
       var data = replayHistory[ index ];
       if ( index == 0 ) setLine ( data[ 1 ], data[ 2 ] );
       else moveLineTo( data[ 1 ], data[ 2 ] );
