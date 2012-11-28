@@ -213,7 +213,7 @@ require( [
     // Utility.
 
     var shake = function() {
-      $( 'body' ).effect( "shake", { direction: 'left', times: 3 }, 600 );
+      $( 'body' ).effect( "shake", { direction: 'up', times: 3 }, 600 );
     }
 
     var reset = function() {
