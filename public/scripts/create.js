@@ -27,6 +27,24 @@ require( [
       $('#erase').click( function() {
         reset();
       });
+      $('#undo').mousedown( function() {
+        startUndoing();
+      });
+      $('#undo').mouseup( function() {
+        stopUndoing();
+      });
+      $('#undo').mouseout( function() {
+        stopUndoing();
+      });
+      $('#redo').mousedown( function() {
+        startRedoing();
+      });
+      $('#redo').mouseup( function() {
+        stopRedoing();
+      });
+      $('#redo').mouseout( function() {
+        stopRedoing();
+      });
     }
 
     // Set up Noduino.
@@ -41,7 +59,6 @@ require( [
           Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
           Noduino.connect(function(err, board) {
             // Listen to input.
-            console.log('connected')
             board.withAnalogInput( { pin: 'A0' }, createBoardInputHandler( drawObjX ) );
             board.withAnalogInput( { pin: 'A5' }, createBoardInputHandler( drawObjY ) );
           });
@@ -68,6 +85,7 @@ require( [
     // Recording history.
 
     var history = [];
+    var redoHistoryArr = [];
     var startTime;
 
     var storeHistory = function() {
@@ -77,10 +95,53 @@ require( [
       time = Math.min( time, 1000 );
       var data = [ time, x, y ];
       history.push( data );
+      redoHistoryArr = [];
     }
 
     var getSerializedHistory = function() {
       return JSON.stringify( history );
+    }
+
+    // Un/re-doing history.
+
+    var undoHistory = function() {
+      if ( history.length > 1 ) {
+        redoHistoryArr.push( history.pop() );
+        drawHistory( history );
+      }
+    }
+
+    var redoHistory = function() {
+      if ( redoHistoryArr.length > 0 ) {
+        history.push( redoHistoryArr.pop() );
+        drawHistory( history );
+      }
+    }
+
+    var drawHistory = function( line ) {
+      processing.background( 250 );
+      var data;
+      for ( var index = 0; index < line.length; index ++ ) {
+        data = line[ index ];
+        if ( index == 0 ) setLine( data[ 1 ], data[ 2 ] );
+        else moveLineTo( data[ 1 ], data[ 2 ] );
+      }
+    }
+
+    var undoInterval;
+    var startUndoing = function() {
+      undoInterval = setInterval( undoHistory, 100 );
+    }
+    var stopUndoing = function() {
+      clearInterval( undoInterval );
+    }
+
+    var redoInterval;
+    var startRedoing = function() {
+      redoInterval = setInterval( redoHistory, 100 );
+    }
+    var stopRedoing = function() {
+      clearInterval( redoInterval );
     }
 
     // Replaying history.
@@ -96,7 +157,7 @@ require( [
     var playHistoryStep = function( index ) {
       // Data structure is [ time, x, y ]
       var data = replayHistory[ index ];
-      if ( index == 0 ) setLine ( data[ 1 ], data[ 2 ] );
+      if ( index == 0 ) setLine( data[ 1 ], data[ 2 ] );
       else moveLineTo( data[ 1 ], data[ 2 ] );
       if ( index < replayHistory.length ) {
         historyTimeout = setTimeout( function() {
@@ -115,7 +176,7 @@ require( [
     var drawObjX;
     var drawObjY;
     var canvas, ctx, processing;
-    var w = 1000, h = 1000;
+    var WIDTH = 900, HEIGHT = 700;
     var x = 0, y = 0;
 
     var moveLine = function( nx, ny ) {
@@ -138,14 +199,12 @@ require( [
     var setLine = function( nx, ny ) {
       x = nx;
       y = ny;
-      storeHistory();
     }
 
     var drawBuffer = function() {
       if ( drawObjX.delta != 0 || drawObjY.delta != 0 ) {
         moveLine( drawObjX.delta, drawObjY.delta );
         drawObjX.delta = drawObjY.delta = 0;
-        console.log(getSerializedHistory())
       }
     }
 
@@ -154,6 +213,7 @@ require( [
     var reset = function() {
       processing.background( 250 );
       history = [];
+      redoHistoryArr = [];
       drawObjX = { prev : undefined, cur : undefined, delta : 0 };
       drawObjY = { prev : undefined, cur : undefined, delta : 0 };
       var d = new Date();
@@ -183,9 +243,10 @@ require( [
       canvas = document.getElementById( "etchasketch" );
       ctx = canvas.getContext( '2d' );
       processing = new Processing( canvas );
-      processing.size( w, h );
+      processing.size( WIDTH, HEIGHT );
       reset();
-      setLine( Math.round( w * .5 ), Math.round( h * .5 ) );
+      setLine( Math.round( WIDTH * .5 ), Math.round( HEIGHT * .5 ) );
+      storeHistory();
 
       // UI,
       setupUi();
@@ -194,7 +255,7 @@ require( [
       setInterval( drawBuffer, 100 );
 
       // Try to connect to board.
-      pollForBoard();
+      //pollForBoard();
 
       // Testing.
       $( '#etchasketch' ).click( function( e ) {
