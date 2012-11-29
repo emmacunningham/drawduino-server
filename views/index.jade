@@ -1,4 +1,24 @@
 header
-  .page-header
-    h1 Happy Holidays from Left Field Labs!
-    p Draw something cool and show off your mad skills.
+  canvas#canvas
+  .row.interface#controls
+    .btn-toolbar(style="margin-bottom: 9px")#toolbar
+      .btn-group
+        a.btn(href="javascript:void(0)")#undo
+          i.icon-backward
+          |  Rewind
+        a.btn(href="javascript:void(0)")#redo
+          i.icon-forward
+          | Fast-forward
+        a.btn(href="javascript:void(0)")#playDemo
+          i.icon-forward
+          | Play demo
+      .btn-group.pull-right
+        a.btn(href="javascript:void(0)")#erase
+          i.icon-refresh
+          |  Shake
+  #turtle
+
+
+  .row.debug
+    pre#connection-log
+      .item $ > Not connected to noduino!

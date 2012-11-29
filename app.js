@@ -4,11 +4,7 @@ define(['kickstart'], function (kickstart) {
 
   // Catch request for serving home page
   srv.all('/', function(req, res) {
-    res.render('index');
-  });
-
-  srv.all('/create', function(req, res) {
-    res.render('create', { script : 'create' } );
+    res.render('index', { script : 'index' } );
   });
 
   srv.all('/about', function(req, res) {

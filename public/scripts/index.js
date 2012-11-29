@@ -29,7 +29,6 @@ require( [
       $turtle = $( '#turtle' );
       turtleSize.width = $turtle.width();
       turtleSize.height = $turtle.height();
-      $canvas =  $( '#etchasketch' );
       $(UI.ERASE).click( function() {
         shake();
         reset();
@@ -293,7 +292,11 @@ require( [
 
     $(document).ready(function(e) {
       // Set up processing.
-      canvas = document.getElementById( "etchasketch" );
+      $canvas =  $( '#canvas' );
+      $canvas.height( $(window).height() - $canvas.offset().top - 10 );
+      WIDTH = $canvas.width();
+      HEIGHT = $canvas.height();
+      canvas = document.getElementById( "canvas" );
       ctx = canvas.getContext( '2d' );
       processing = new Processing( canvas );
       processing.size( WIDTH, HEIGHT );
@@ -311,10 +314,18 @@ require( [
       //pollForBoard();
 
       // Testing.
-      $( '#etchasketch' ).click( function( e ) {
+      $canvas.click( function( e ) {
         var range = 200;
         testInput( drawObjX, Math.round( Math.random() * range - range * .5 ) );
         testInput( drawObjY, Math.round( Math.random() * range - range * .5 ) );
+      });
+
+      $( document ).keypress( function( e ) {
+        switch( e.keyCode ) {
+          case 96:
+            $('#connection-log').fadeToggle();
+            break;
+        }
       });
 
     });

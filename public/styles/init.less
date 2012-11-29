@@ -46,51 +46,6 @@ hr.soften {
 }
 
 
-/* Jumbotrons
--------------------------------------------------- */
-.jumbotron {
-  position: relative;
-}
-.jumbotron h1 {
-  margin-bottom: 9px;
-  font-size: 81px;
-  letter-spacing: -1px;
-  line-height: 1;
-}
-.jumbotron p {
-  margin-bottom: 18px;
-  font-weight: 300;
-}
-.jumbotron .btn-large {
-  font-size: 20px;
-  font-weight: normal;
-  padding: 14px 24px;
-  margin-right: 10px;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px;
-}
-
-/* Masthead (docs home) */
-.masthead {
-  padding-top: 36px;
-  margin-bottom: 72px;
-}
-.masthead h1,
-.masthead p {
-  text-align: center;
-}
-.masthead h1 {
-  margin-bottom: 18px;
-}
-.masthead p {
-  margin-left: 5%;
-  margin-right: 5%;
-  font-size: 30px;
-  line-height: 36px;
-}
-
-
 /* Specific jumbotrons
 ------------------------- */
 /* supporting docs pages */
@@ -218,39 +173,6 @@ hr.soften {
   position: relative;
   top: 5px;
 }
-
-
-/* Marketing section of Overview
--------------------------------------------------- */
-.marketing .row {
-  margin-bottom: 9px;
-}
-.marketing h1 {
-  margin: 36px 0 27px;
-  font-size: 40px;
-  font-weight: 300;
-  text-align: center;
-}
-.marketing h2,
-.marketing h3 {
-  font-weight: 300;
-}
-.marketing h2 {
-  font-size: 22px;
-}
-.marketing p {
-  margin-right: 10px;
-}
-.marketing .bs-icon {
-  float: left;
-  margin: 7px 10px 0 0;
-  opacity: .8;
-}
-.marketing .small-bs-icon {
-  float: left;
-  margin: 4px 5px 0 0;
-}
-
 
 
 /* Footer
@@ -554,12 +476,9 @@ form.well {
 -------------------------------------------------- */
 @media (max-width: 480px) {
 
-  /* Reduce padding above jumbotron */
   body {
-    padding-top: 70px;
   }
 
-  /* Change up some type stuff */
   h2 {
     margin-top: 27px;
   }
@@ -764,81 +683,42 @@ form.well {
 
 
 body {
-position: relative;
-padding-top: 90px;
-background-color: white; }
-.jumbotron {
   position: relative;
-}
-.jumbotron h1 {
-  margin-bottom: 9px;
-  font-size: 81px;
-  letter-spacing: -1px;
-  line-height: 1;
-}
-.jumbotron p {
-  margin-bottom: 18px;
-  font-weight: 300;
-}
-.subhead {
-  padding-bottom: 0;
-  margin-bottom: 9px;
-}
-.subhead h1 {
-  font-size: 54px;
-}
-#homeContent {
-  padding-top: 30px;
-}
-#homeBoxes {
-  padding-top: 30px;
-}
-.example {
-  margin-top: 10px;
-}
-.example .btn {
-  margin-bottom: 10px;
-}
-.response {
-  line-height: 28px;
-  margin-left: 12px;
+  background-color: white;
+  border: solid 10px gray;
 }
 
-.response.error {
-  color: red;
+.navbar {
+  height: 40px;
+  margin-bottom: 0;
 }
-label.label { display: inline; }
 
-#e2-secondStep select {
-  margin-right: 4px;
+.navbar-inner {
+  height: 100%;
 }
-.exampleLinks {
-  margin-top: 8px;
+
+.container {
+  width: auto;
 }
-.range {
-  margin-bottom: 0px;
-  position: relative;
-  top: -9px;
-  margin-left: 12px;
-  width: 373px;
+
+#canvas {
+  width: 100%;
 }
-.interval {
-  margin-bottom: 0px;
-  position: relative;
-  top: -9px;
-  margin-left: 12px;
-  width: 60px;
-}
-.collectedTags {
-  margin-top: 14px;
+
+#controls {
+  position: absolute;
+  z-index: 10;
+  top: 40px;
+  left: 30px;
 }
 
 #connection-log {
-  height: 358px;
+  width: auto;
+  height: 258px;
   overflow: hidden;
   padding-top: 4px;
   overflow-x: hidden;
-  margin-bottom: 16px;
+  display: none;
 }
 
 #turtle {
