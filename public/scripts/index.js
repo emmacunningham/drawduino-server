@@ -10,7 +10,7 @@ require( [
     libs + 'Noduino.Socket.js',
     libs + 'Logger.HTML.js'
   ],
-  function( $, dropdown, prettify, processing, NoduinoObj, Connector, Logger ) {
+  function( $, dropdown, prettify, ui, processing, NoduinoObj, Connector, Logger ) {
 
     // Set up UI.
 
@@ -311,7 +311,7 @@ require( [
       setInterval( drawBuffer, 100 );
 
       // Try to connect to board.
-      //pollForBoard();
+      pollForBoard();
 
       // Testing.
       $canvas.click( function( e ) {
