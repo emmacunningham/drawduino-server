@@ -1,7 +1,9 @@
+var line = 'scripts/line/';
 var vendor = 'scripts/vendor/';
 var libs = 'scripts/libs/';
 require( [
-  "jquery",
+    "jquery",
+    line + "Canvas.js",
     vendor + "dropdown.js",
     vendor + "prettify.js",
     vendor + "jquery-ui-1.9.2.custom.min.js",
@@ -10,12 +12,13 @@ require( [
     libs + 'Noduino.Socket.js',
     libs + 'Logger.HTML.js'
   ],
-  function( $, dropdown, prettify, ui, processing, NoduinoObj, Connector, Logger ) {
+  function( $, Canvas, dropdown, prettify, ui, processing, NoduinoObj, Connector, Logger ) {
+
+
+    var canvas;
 
     // Set up UI.
 
-    var $turtle;
-    var turtleSize = { width: 0, height: 0 };
     var UI = {
       TOOLBAR : '#toolbar',
       ERASE : '#erase',
@@ -23,39 +26,36 @@ require( [
       REDO: '#redo',
       PLAY_DEMO: '#playDemo'
     }
-    var $canvas;
+    //var $canvas;
 
     var setupUi = function() {
-      $turtle = $( '#turtle' );
-      turtleSize.width = $turtle.width();
-      turtleSize.height = $turtle.height();
       $(UI.ERASE).click( function() {
         shake();
         reset();
       });
        $(UI.UNDO).click( function() {
-        undoHistory();
+        canvas.undo();
       });
       $(UI.UNDO).mousedown( function() {
-        startUndoing();
+        canvas.startUndoing();
       });
       $(UI.UNDO).mouseup( function() {
-        stopUndoing();
+        canvas.stopUndoing();
       });
       $(UI.UNDO).mouseout( function() {
-        stopUndoing();
+        canvas.stopUndoing();
       });
       $(UI.REDO).click( function() {
-        redoHistory();
+        canvas.redo();
       });
       $(UI.REDO).mousedown( function() {
-        startRedoing();
+        canvas.startRedoing();
       });
       $(UI.REDO).mouseup( function() {
-        stopRedoing();
+        canvas.stopRedoing();
       });
       $(UI.REDO).mouseout( function() {
-        stopRedoing();
+        canvas.stopRedoing();
       });
       $(UI.PLAY_DEMO).click( function() {
         playDemo();
@@ -66,6 +66,8 @@ require( [
     // Set up Noduino.
 
     var Noduino = null;
+    var drawObjX;
+    var drawObjY;
 
     var pollForBoard = function() {
       // Poll indefinitely so we can connect and disconnect at will.
@@ -87,9 +89,8 @@ require( [
     var createBoardInputHandler = function( drawObj ) {
       return function( err, AnalogInput ) {
         AnalogInput.on('change', function(a) {
-          if ( !isPlayingHistory ) {
+          if ( !canvas.isPlayingHistory() ) {
             var potValue = AnalogInput.value;
-            console.log(potValue)
             drawObj.cur = potValue;
             if ( drawObj.prev != undefined ) {
               drawObj.delta += ( drawObj.cur - drawObj.prev) * INPUT_FACTOR;
@@ -100,185 +101,42 @@ require( [
       }
     }
 
-    // Recording history.
-
-    var history = [];
-    var redoHistoryArr = [];
-    var startTime;
-
-    var storeHistory = function() {
-      var t = new Date();
-      var time = t.getTime() - startTime;
-      startTime = t.getTime();
-      time = Math.min( time, 1000 );
-      var data = [ time, x, y ];
-      history.push( data );
-      redoHistoryArr = [];
-      updateHistoryUi();
-    }
-
-    var getSerializedHistory = function() {
-      return JSON.stringify( history );
-    }
-
-    // Un/re-doing history.
-
     var showToolbar = function( show ) {
       if ( show ) $(UI.TOOLBAR).show();
       else $(UI.TOOLBAR).hide();
     }
 
-    var undoHistory = function() {
-      if ( history.length > 1 ) {
-        redoHistoryArr.push( history.pop() );
-        drawHistory( history );
-        updateHistoryUi();
-      }
+    var onResize = function( e ) {
+      canvas.updateSize();
     }
 
-    var redoHistory = function() {
-      if ( redoHistoryArr.length > 0 ) {
-        history.push( redoHistoryArr.pop() );
-        drawHistory( history );
-        updateHistoryUi();
-      }
+    var onCanvasChange_ = function( e ) {
+      updateHistoryUi();
     }
-
-    var drawHistory = function( line ) {
-      processing.background( 250 );
-      var data;
-      for ( var index = 0; index < line.length; index ++ ) {
-        data = line[ index ];
-        if ( index == 0 ) setLine( data[ 1 ], data[ 2 ] );
-        else moveLineTo( data[ 1 ], data[ 2 ] );
-      }
-    }
-
-    var updateHistoryUi = function() {
-      if ( history.length > 1 ) $(UI.UNDO).removeClass( 'disabled' );
-      else $(UI.UNDO).addClass( 'disabled' );
-      if ( redoHistoryArr.length > 0 ) $(UI.REDO).removeClass( 'disabled' );
-      else $(UI.REDO).addClass( 'disabled' );
-    }
-
-    var undoInterval;
-    var startUndoing = function() {
-      undoInterval = setInterval( undoHistory, 100 );
-    }
-    var stopUndoing = function() {
-      clearInterval( undoInterval );
-    }
-
-    var redoInterval;
-    var startRedoing = function() {
-      redoInterval = setInterval( redoHistory, 100 );
-    }
-    var stopRedoing = function() {
-      clearInterval( redoInterval );
-    }
-
-    // Replaying history.
-
-    var historyTimeout;
-    var replayHistory;
-    var isPlayingHistory = false;
-
-    var playHistory = function( serializedHistory ) {
-      replayHistory = JSON.parse( serializedHistory );
-      isPlayingHistory = true;
-      showToolbar( false );
-      playHistoryStep( 0 );
-    }
-
-    var playHistoryStep = function( index ) {
-      // Data structure is [ time, x, y ]
-      var data = replayHistory[ index ];
-      if ( index == 0 ) setLine( data[ 1 ], data[ 2 ] );
-      else moveLineTo( data[ 1 ], data[ 2 ] );
-      if ( index < replayHistory.length - 1 ) {
-        historyTimeout = setTimeout( function() {
-          playHistoryStep( index + 1 );
-        }, data[ 0 ]);
-      } else {
-        stopPlayingHistory();
-      }
-    }
-
-    var stopPlayingHistory = function() {
-      clearTimeout( historyTimeout );
-      isPlayingHistory = false;
-      showToolbar( true );
-      drawHistory( history );
-    }
-
-    // Drawing.
-
-    var drawObjX;
-    var drawObjY;
-    var canvas, ctx, processing;
-    var WIDTH = 900, HEIGHT = 700;
-    var x = 0, y = 0;
-
-    var moveLine = function( nx, ny ) {
-      processing.stroke( 30, 60 );
-      processing.line( x, y, x + nx, y + ny );
-      x += nx;
-      y += ny;
-      storeHistory();
-      var canvasX = $canvas.offset().left;
-      var canvasY = $canvas.offset().top;
-      $turtle.offset( { left: canvasX + x - turtleSize.width * .5, top: canvasY + y - turtleSize.height * .5 } );
-    }
-
-    var moveLineTo = function( nx, ny ) {
-      processing.stroke( 30, 60 );
-      processing.line( x, y, nx, ny );
-      x = nx;
-      y = ny;
-      var canvasX = $canvas.offset().left;
-      var canvasY = $canvas.offset().top;
-      $turtle.offset( { left: canvasX + x - turtleSize.width * .5, top: canvasY + y - turtleSize.height * .5 } );
-    }
-
-    var setLine = function( nx, ny ) {
-      x = nx;
-      y = ny;
-    }
-
-    var drawBuffer = function() {
-      if ( drawObjX.delta != 0 || drawObjY.delta != 0 ) {
-        moveLine( drawObjX.delta, drawObjY.delta );
-        drawObjX.delta = drawObjY.delta = 0;
-      }
-    }
-
-    // Utility.
 
     var shake = function() {
       $( 'body' ).effect( "shake", { direction: 'up', times: 3 }, 600 );
     }
 
     var reset = function() {
-      processing.background( 250 );
-      history = [];
-      redoHistoryArr = [];
+      canvas.reset();
       drawObjX = { prev : undefined, cur : undefined, delta : 0 };
       drawObjY = { prev : undefined, cur : undefined, delta : 0 };
-      var d = new Date();
-      startTime = d.getTime();
-      updateHistoryUi();
     }
 
-    var takeSnapshot = function() {
-      return canvas.toDataURL();
+    var drawBuffer = function() {
+      if ( drawObjX.delta != 0 || drawObjY.delta != 0 ) {
+        canvas.drawLineBy( drawObjX.delta, drawObjY.delta );
+        drawObjX.delta = drawObjY.delta = 0;
+      }
     }
 
-    var updateCanvasSize = function() {
-      $canvas.height( $(window).height() - $canvas.offset().top - 25 );
-      WIDTH = $canvas.width();
-      HEIGHT = $canvas.height();
-      processing.size( WIDTH, HEIGHT );
-      drawHistory( history );
+    var updateHistoryUi = function() {
+      var undoHistory = canvas.getUndoHistory(), redoHistory = canvas.getRedoHistory();
+      if ( undoHistory.length > 1 ) $(UI.UNDO).removeClass( 'disabled' );
+      else $(UI.UNDO).addClass( 'disabled' );
+      if ( redoHistory.length > 0 ) $(UI.REDO).removeClass( 'disabled' );
+      else $(UI.REDO).addClass( 'disabled' );
     }
 
     // Testing.
@@ -299,15 +157,9 @@ require( [
     // Init.
 
     $(document).ready(function(e) {
-      // Set up processing.
-      $canvas =  $( '#canvas' );
-      canvas = document.getElementById( "canvas" );
-      ctx = canvas.getContext( '2d' );
-      processing = new Processing( canvas );
-      updateCanvasSize();
+      canvas = new Canvas( document.getElementById( 'canvas' ) );
+      canvas.addEventListener( Canvas.Event.CHANGE, onCanvasChange_ );
       reset();
-      setLine( Math.round( WIDTH * .5 ), Math.round( HEIGHT * .5 ) );
-      storeHistory();
 
       // UI,
       setupUi();
@@ -319,7 +171,7 @@ require( [
       pollForBoard();
 
       // Testing.
-      $canvas.click( function( e ) {
+      canvas.$get().click( function( e ) {
         var range = 200;
         testInput( drawObjX, Math.round( Math.random() * range - range * .5 ) );
         testInput( drawObjY, Math.round( Math.random() * range - range * .5 ) );
@@ -333,10 +185,7 @@ require( [
         }
       });
 
-      $( window ).resize( function() {
-        updateCanvasSize();
-      });
-
+      $( window ).resize( onResize );
     });
 
   }
