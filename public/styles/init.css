@@ -71,4 +71,4 @@ form.well{padding:14px;}
 #canvas{width:100%;}
 #controls{position:absolute;z-index:10;top:40px;left:30px;}
 #connection-log{width:auto;height:258px;overflow:hidden;padding-top:4px;overflow-x:hidden;display:none;}
-#turtle{position:absolute;z-index:100;width:15px;height:15px;background-image:url('../images/turtle.png');}
+#turtle{position:absolute;z-index:100;width:15px;height:15px;background-image:url('../images/turtle.png');display:none;}

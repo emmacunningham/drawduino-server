@@ -273,6 +273,14 @@ require( [
       return canvas.toDataURL();
     }
 
+    var updateCanvasSize = function() {
+      $canvas.height( $(window).height() - $canvas.offset().top - 25 );
+      WIDTH = $canvas.width();
+      HEIGHT = $canvas.height();
+      processing.size( WIDTH, HEIGHT );
+      drawHistory( history );
+    }
+
     // Testing.
 
     var testInput = function( drawObj, value ) {
@@ -293,13 +301,10 @@ require( [
     $(document).ready(function(e) {
       // Set up processing.
       $canvas =  $( '#canvas' );
-      $canvas.height( $(window).height() - $canvas.offset().top - 10 );
-      WIDTH = $canvas.width();
-      HEIGHT = $canvas.height();
       canvas = document.getElementById( "canvas" );
       ctx = canvas.getContext( '2d' );
       processing = new Processing( canvas );
-      processing.size( WIDTH, HEIGHT );
+      updateCanvasSize();
       reset();
       setLine( Math.round( WIDTH * .5 ), Math.round( HEIGHT * .5 ) );
       storeHistory();
@@ -326,6 +331,10 @@ require( [
             $('#connection-log').fadeToggle();
             break;
         }
+      });
+
+      $( window ).resize( function() {
+        updateCanvasSize();
       });
 
     });
