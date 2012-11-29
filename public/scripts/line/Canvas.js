@@ -79,17 +79,17 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     var data;
     for ( var index = 0; index < line.length; index ++ ) {
       data = line[ index ];
-      if ( index == 0 ) this.setLineAt_( data[ 1 ], data[ 2 ] );
-      else this.drawLineTo_( data[ 1 ], data[ 2 ] );
+      if ( index == 0 ) this.setLineAt( data[ 1 ], data[ 2 ] );
+      else this.drawLineTo( data[ 1 ], data[ 2 ] );
     }
   }
 
-  Canvas.prototype.setLineAt_ = function( nx, ny ) {
+  Canvas.prototype.setLineAt = function( nx, ny ) {
     this.pos_.x = nx;
     this.pos_.y = ny;
   }
 
-  Canvas.prototype.drawLineTo_ = function( nx, ny ) {
+  Canvas.prototype.drawLineTo = function( nx, ny ) {
     this.processing_.stroke( 30, 60 );
     this.processing_.line( this.pos_.x, this.pos_.y, nx, ny );
     this.pos_.x = nx;
@@ -150,40 +150,40 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     clearInterval( this.redoInterval_ );
   }
 
-  /***** Playback *****/
+   /***** Utility *****/
 
-  Canvas.prototype.playHistory = function( serializedHistory ) {
-    replayHistory = JSON.parse( serializedHistory );
-    isPlayingHistory = true;
-    showToolbar( false );
-    playHistoryStep( 0 );
-  }
-
-  Canvas.prototype.playHistoryStep = function( index ) {
-    // Data structure is [ time, x, y ]
-    var data = replayHistory[ index ];
-    if ( index == 0 ) setLine( data[ 1 ], data[ 2 ] );
-    else moveLineTo( data[ 1 ], data[ 2 ] );
-    if ( index < replayHistory.length - 1 ) {
-      historyTimeout = setTimeout( function() {
-        playHistoryStep( index + 1 );
-      }, data[ 0 ]);
-    } else {
-      stopPlayingHistory();
+  Canvas.findMinMax = function( line ) {
+    var min = { x: 100000, y: 1000000 };
+    var max = { x: 0, y: 0 };
+    var data;
+    for ( var i = 0; i < line.length; i++ ) {
+      data = line[ i ];
+      if ( data[ 1 ] < min.x ) min.x = data[ 1 ];
+      if ( data[ 2 ] < min.y ) min.y = data[ 2 ];
+      if ( data[ 1 ] > max.x ) max.x = data[ 1 ];
+      if ( data[ 2 ] > max.y ) max.y = data[ 2 ];
     }
+    return { min: min, max: max };
   }
 
-  Canvas.prototype.stopPlayingHistory = function() {
-    clearTimeout( historyTimeout );
-    isPlayingHistory = false;
-    showToolbar( true );
-    drawHistory( history );
+  /***** Setters *****/
+
+  Canvas.prototype.setIsPlayingHistory = function( val ) {
+    this.isPlayingHistory_ = val;
   }
 
   /***** Getters *****/
 
   Canvas.prototype.$get = function() {
     return this.$canvas_;
+  }
+
+  Canvas.prototype.getWidth = function() {
+    return this.size_.w;
+  }
+
+  Canvas.prototype.getHeight = function() {
+    return this.size_.h;
   }
 
   Canvas.prototype.getUndoHistory = function() {
@@ -202,7 +202,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     return canvas.toDataURL();
   }
 
-  Canvas.prototype.isPlayingHistory = function() {
+  Canvas.prototype.getIsPlayingHistory = function() {
     return this.isPlayingHistory_;
   }
 
