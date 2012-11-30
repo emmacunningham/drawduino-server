@@ -173,7 +173,7 @@ require( [
       // UI.
       reset();
       setupUi();
-      setInterval( drawBuffer, 100 );
+      setInterval( drawBuffer, 50 );
       pollForBoard();
 
       // Testing.
