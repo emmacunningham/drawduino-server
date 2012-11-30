@@ -10,6 +10,8 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
 
     // Spatial.
     this.size_ = { w : 0, h : 0 };
+    this.center_ = { x : 0, y : 0 };
+    this.prevPos_ = { x: 0, y: 0 };
     this.pos_ = { x: 0, y: 0 };
     this.min_ = { x: 0, y: 0 };
     this.max_ = { x: 0, y: 0 };
@@ -36,6 +38,8 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.Event.CHANGE = "Canvas.Event.CHANGE";
 
   Canvas.prototype.reset = function() {
+    this.prevPos_ = { x: 0, y: 0 };
+    this.pos_ = { x: 0, y: 0 };
     this.processing_.background( 250 );
     this.undoHistory_ = [];
     this.redoHistory_ = [];
@@ -51,10 +55,12 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.$canvas_.height( $(window).height() - this.$canvas_.offset().top - 25 );
     this.size_.w = this.$canvas_.width();
     this.size_.h = this.$canvas_.height();
+    this.center_.x = this.size_.w * .5;
+    this.center_.y = this.size_.h * .5;
     this.processing_.size( this.size_.w, this.size_.h );
     this.updateMinMax_();
     this.centerLine_();
-    this.draw( this.undoHistory_ );
+    this.trace_( this.undoHistory_ );
     this.updateTurtle();
   }
 
@@ -76,12 +82,14 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   }
 
   Canvas.prototype.updateHistory = function() {
+    // To do
     var t = new Date();
     var time = t.getTime() - this.startTime_;
     this.startTime_ = t.getTime();
     time = Math.min( time, 1000 );
-    var data = [ time, this.pos_.x, this.pos_.y ];
-    this.undoHistory_.push( data );
+    var x = this.pos_.x - this.prevPos_.x;
+    var y = this.pos_.y - this.prevPos_.y;
+    this.undoHistory_.push( [ time, x, y ] );
     this.redoHistory_ = [];
     this.dispatchChange();
   }
@@ -93,6 +101,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   /***** Centering *****/
 
   Canvas.prototype.centerLine_ = function() {
+    /*
     var data;
     for ( var i = 0; i < this.undoHistory_.length; i++ ) {
       this.centerData_( this.undoHistory_[ i ] );
@@ -100,43 +109,37 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     for ( var i = 0; i < this.redoHistory_.length; i++ ) {
       this.centerData_( this.redoHistory_[ i ] );
     }
-    this.updateMinMax_();
+    this.updateMinMax_();*/
   }
 
   Canvas.prototype.centerData_ = function( data ) {
-    data[ 1 ] = data[ 1 ] - this.min_.x + ( this.size_.w - this.width_ ) * .5;
-    data[ 2 ]= data[ 2 ] - this.min_.y + ( this.size_.h - this.height_ ) * .5;
+    //data[ 1 ] = data[ 1 ] - this.min_.x + ( this.size_.w - this.width_ ) * .5;
+    //data[ 2 ]= data[ 2 ] - this.min_.y + ( this.size_.h - this.height_ ) * .5;
   }
 
   /***** Drawing *****/
 
-  Canvas.prototype.draw = function( line ) {
+  Canvas.prototype.trace_ = function( line ) {
     this.processing_.background( 250 );
-    var data;
-    for ( var index = 0; index < line.length; index ++ ) {
+    var data, prevData;
+    var centerX = this.center_.x;
+    var centerY = this.center_.y;
+    for ( var index = 1; index < line.length; index ++ ) {
       data = line[ index ];
-      if ( index == 0 ) this.setLineAt( data[ 1 ], data[ 2 ] );
-      else this.drawLineTo_( data[ 1 ], data[ 2 ] );
+      prevData = line[ index - 1 ];
+      this.processing_.line( centerX + prevData.x, centerY + prevData.y, centerX + data.x, centerY + data.y );
     }
-  }
-
-  Canvas.prototype.drawLineTo_ = function( nx, ny ) {
-    this.processing_.stroke( 30, 60 );
-    this.processing_.line( this.pos_.x, this.pos_.y, nx, ny );
-    this.pos_.x = nx;
-    this.pos_.y = ny;
-  }
-
-  Canvas.prototype.setLineAt = function( nx, ny ) {
-    this.pos_.x = nx;
-    this.pos_.y = ny;
-    this.updateTurtle();
-    this.updateHistory();
   }
 
   Canvas.prototype.drawLineBy = function( nx, ny ) {
     this.processing_.stroke( 30, 60 );
-    this.processing_.line( this.pos_.x, this.pos_.y, this.pos_.x + nx, this.pos_.y + ny );
+    this.processing_.line(
+      this.center_.x + this.pos_.x,
+      this.center_.y + this.pos_.y,
+      this.center_.x + this.pos_.x + nx,
+      this.center_.y + this.pos_.y + ny );
+    this.prevPos_.x = this.pos_.x;
+    this.prevPos_.y = this.pos_.y;
     this.pos_.x += nx;
     this.pos_.y += ny;
     this.updateTurtle();
@@ -156,7 +159,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.prototype.undo = function() {
       if ( this.undoHistory_.length > 1 ) {
         this.redoHistory_.push( this.undoHistory_.pop() );
-        this.draw( this.undoHistory_ );
+        this.trace_( this.undoHistory_ );
         this.dispatchChange();
       }
     }
@@ -164,7 +167,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.prototype.redo = function() {
     if ( this.redoHistory_.length > 0 ) {
       this.undoHistory_.push( this.redoHistory_.pop() );
-      this.draw( this.undoHistory_ );
+      this.trace_( this.undoHistory_ );
       this.dispatchChange();
     }
   }
