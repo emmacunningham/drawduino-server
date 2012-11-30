@@ -8,7 +8,7 @@
  * @url         https://github.com/semu/noduino
  */
 
-define(['./LED.js', './Button.js', './AnalogInput.js',  './DigitalOutput.js', './Speaker.js'], function(LEDObj, ButtonObj, AnalogInputObj, DigitalOutObj, SpeakerObj) {
+define(['./LED.js', './Button.js', './AnalogInput.js',  './DigitalInput.js', './RotaryInput.js', './DigitalOutput.js', './Speaker.js'], function(LEDObj, ButtonObj, AnalogInputObj, DigitalInputObj, RotaryInputObj, DigitalOutObj, SpeakerObj) {
 
   /**
    * Create Board
@@ -82,6 +82,25 @@ define(['./LED.js', './Button.js', './AnalogInput.js',  './DigitalOutput.js', '.
   };
 
   /**
+   * Create DigitalInput object on board
+   * @param object options
+   * @param function callback
+   */
+  Board.prototype.withDigitalInput = function(options, next) {
+    this.with(this.c.TYPE_DIGITALIN, options, next);
+  };
+  
+  /**
+   * Create RotaryInput object on board
+   * @param object options
+   * @param function callback
+   */
+  Board.prototype.withRotaryInput = function(options, next) {
+    this.with(this.c.TYPE_ROTARYIN, options, next);
+  };  
+
+
+  /**
    * Create LED object on board
    * @param object options
    * @param function callback
@@ -131,6 +150,21 @@ define(['./LED.js', './Button.js', './AnalogInput.js',  './DigitalOutput.js', '.
           next(null, new AnalogInputObj({"pin": pin, "type": what}, that.c));
         });
       break;
+      
+      case this.c.TYPE_DIGITALIN:
+        this.c.withDigitalIn(options.pin, function(err, pin) {
+          if (err) { return next(err); }
+          next(null, new DigitalInputObj({"pin": pin, "type": what}, that.c));
+        });
+      break;      
+      
+      case this.c.TYPE_ROTARYIN:
+        this.c.withRotaryIn(options.pin, function(err, pin) {
+          if (err) { return next(err); }
+          next(null, new RotaryInputObj({"pin": pin, "type": what}, that.c));
+        });
+      break;       
+      
       case this.c.TYPE_DIGITALOUT:
         this.c.withDigitalOutput(options.pin, function(err, pin) {
           if (err) { return next(err); }

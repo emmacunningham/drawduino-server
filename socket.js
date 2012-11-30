@@ -62,6 +62,20 @@ define(['socket.io', 'public/scripts/libs/Noduino', 'public/scripts/libs/Noduino
               }
             });
           break;
+          
+          case 'rotaryRead':
+            var curPin = data.pin;
+            that.current().watchRotaryIn({'pin': data.pin}, function(m) {
+              if (!m.pin || m.pin == null || m.pin == NaN) {
+                return; }
+
+              if (m.state != that.pinCache[m.pin] && curPin == m.pin) {
+                socket.emit('response', {'type': 'rotaryRead', 'pin': m.pin, 'value': m.state});
+                that.pinCache[m.pin] = m.state;
+              }
+            });
+          break;          
+          
         }
       });
 

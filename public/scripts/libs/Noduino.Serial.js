@@ -27,7 +27,9 @@ define(function(require, exports, module) {
   SerialNoduino.prototype.TYPE_BUTTON   = 0x32;
   SerialNoduino.prototype.TYPE_ANALOGIN = 0x33;
   SerialNoduino.prototype.TYPE_DIGITALOUT = 0x34;
-  SerialNoduino.prototype.TYPE_SPEAKER = 0x35;
+  SerialNoduino.prototype.TYPE_DIGITALIN = 0x35;
+  
+//  SerialNoduino.prototype.TYPE_SPEAKER = 0x35;
   
   SerialNoduino.prototype.current = function() {
     return this.boards[0];
@@ -104,6 +106,12 @@ define(function(require, exports, module) {
     this.write('02' + pin + this.normalizeVal(0));
   };
   
+  SerialNoduino.prototype.rotaryRead = function(pin) {
+    pin = this.normalizePin(pin);
+    this.log('info', 'rotaryRead from pin ' + pin);
+    this.write('05' + pin + this.normalizeVal(0));
+  };  
+  
   SerialNoduino.prototype.watchDigitalIn = function(DigitalIn, callback) {
     var that = this;
 
@@ -128,6 +136,16 @@ define(function(require, exports, module) {
       }    
     });
   };
+  
+  SerialNoduino.prototype.watchRotaryIn = function(RotaryIn, callback) {
+    var that = this;
+
+    setInterval(function () {
+      that.rotaryRead(RotaryIn.pin);
+    }, 50);
+    
+    
+  };  
   
   return SerialNoduino;  
 });
