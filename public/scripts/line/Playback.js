@@ -6,6 +6,8 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
     this.canvas_ = canvas;
     this.line_, this.min_, this._max_, this.width_, this.height_;
     this.timeout_;
+
+    this.speed_ = 2;
   };
   Playback.prototype = new Dispatcher();
 
@@ -36,7 +38,7 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
       var self = this;
       this.timeout_ = setTimeout( function() {
         self.stepTo_( index + 1 );
-      }, data[ 0 ] );
+      }, data[ 0 ] / this.speed_ );
     } else {
       this.stop();
     }
