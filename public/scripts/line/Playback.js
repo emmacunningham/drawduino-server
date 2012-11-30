@@ -9,6 +9,10 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
   };
   Playback.prototype = new Dispatcher();
 
+  Playback.Event = {};
+  Playback.Event.START = "Playback.Event.START";
+  Playback.Event.STOP = "Playback.Event.STOP";
+
   Playback.prototype.play = function( lineStr ) {
     var data = JSON.parse( lineStr );
     this.line_ = data.line;
@@ -17,8 +21,8 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
     this.width_ = this.max_.x - this.min_.x;
     this.height_ = this.max_.y - this.min_.y;
     this.canvas_.setIsPlayingHistory( true );
-    //showToolbar( false ); // dispatch event
     this.stepTo_( 0 );
+    this.dispatch( Playback.Event.START );
   }
 
   Playback.prototype.stepTo_ = function( index ) {
@@ -41,8 +45,8 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
   Playback.prototype.stop = function() {
     clearTimeout( this.timeout_ );
     this.canvas_.setIsPlayingHistory( false );
-    //showToolbar( true );
-    //drawHistory( history );
+    this.canvas_.draw( this.canvas_.getUndoHistory() );
+    this.dispatch( Playback.Event.STOP );
   }
 
   return Playback;

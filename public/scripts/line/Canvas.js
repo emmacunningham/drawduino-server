@@ -48,7 +48,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.size_.w = this.$canvas_.width();
     this.size_.h = this.$canvas_.height();
     this.processing_.size( this.size_.w, this.size_.h );
-    this.draw_( this.undoHistory_ );
+    this.draw( this.undoHistory_ );
   }
 
   Canvas.prototype.updateTurtle = function() {
@@ -74,7 +74,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
 
   /***** Drawing *****/
 
-  Canvas.prototype.draw_ = function( line ) {
+  Canvas.prototype.draw = function( line ) {
     this.processing_.background( 250 );
     var data;
     for ( var index = 0; index < line.length; index ++ ) {
@@ -119,7 +119,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.prototype.undo = function() {
       if ( this.undoHistory_.length > 1 ) {
         this.redoHistory_.push( this.undoHistory_.pop() );
-        this.draw_( this.undoHistory_ );
+        this.draw( this.undoHistory_ );
         this.dispatchChange();
       }
     }
@@ -127,7 +127,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.prototype.redo = function() {
     if ( this.redoHistory_.length > 0 ) {
       this.undoHistory_.push( this.redoHistory_.pop() );
-      this.draw_( this.undoHistory_ );
+      this.draw( this.undoHistory_ );
       this.dispatchChange();
     }
   }

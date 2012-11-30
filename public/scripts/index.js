@@ -113,6 +113,14 @@ require( [
       updateHistoryUi();
     }
 
+    var onPlaybackStart_ = function() {
+      showToolbar( false );
+    }
+
+    var onPlaybackStop_ = function() {
+      showToolbar( true );
+    }
+
     var shake = function() {
       $( 'body' ).effect( "shake", { direction: 'up', times: 3 }, 600 );
     }
@@ -159,6 +167,8 @@ require( [
       canvas = new Canvas( document.getElementById( 'canvas' ) );
       canvas.addEventListener( Canvas.Event.CHANGE, onCanvasChange_ );
       playback = new Playback( canvas );
+      playback.addEventListener( Playback.Event.START, onPlaybackStart_ );
+      playback.addEventListener( Playback.Event.STOP, onPlaybackStop_ );
 
       // UI.
       reset();
