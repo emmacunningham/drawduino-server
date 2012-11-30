@@ -22,6 +22,8 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
     this.max_ = data.max;
     this.width_ = this.max_.x - this.min_.x;
     this.height_ = this.max_.y - this.min_.y;
+    // Temp copy histories over
+    this.canvas_.reset();
     this.canvas_.setIsPlayingHistory( true );
     this.stepTo_( 0 );
     this.dispatch( Playback.Event.START );
@@ -29,18 +31,26 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
 
   Playback.prototype.stepTo_ = function( index ) {
     // Data structure is [ time, x, y ]
+    var prevData = ( index > 0 ) ? this.line_[ index - 1 ] : null;
     var data = this.line_[ index ];
-    var x = data[ 1 ] - this.min_.x + ( this.canvas_.getWidth() - this.width_ ) * .5;
-    var y = data[ 2 ] - this.min_.y + ( this.canvas_.getHeight() - this.height_ ) * .5;
-    if ( index == 0 ) this.canvas_.setLineAt( x, y );
-    else this.canvas_.drawLineTo( x, y );
+    //var x = data[ 1 ] - this.min_.x + ( this.canvas_.getWidth() - this.width_ ) * .5;
+    //var y = data[ 2 ] - this.min_.y + ( this.canvas_.getHeight() - this.height_ ) * .5;
+    if ( index == 0 ) {
+      this.canvas_.setLineAt( data[ 1 ], data[ 2 ] );
+    } else {
+      var x = data[ 1 ] - prevData[ 1 ];
+      var y = data[ 2 ] - prevData[ 2 ];
+      console.log(x,y)
+      this.canvas_.drawLineBy( data[ 1 ] - prevData[ 1 ], data[ 2 ] - prevData[ 2 ] );
+    }
+//    else this.canvas_.drawLineBy( x - this.canvas_.getX(), y - this.canvas_.getY() );
     if ( index < this.line_.length - 1 ) {
       var self = this;
       this.timeout_ = setTimeout( function() {
         self.stepTo_( index + 1 );
       }, data[ 0 ] / this.speed_ );
     } else {
-      this.stop();
+      //this.stop();
     }
   }
 

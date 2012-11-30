@@ -29,7 +29,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
 
     // Init.
     this.updateSize();
-    this.centerTurtle();
   };
   Canvas.prototype = new Dispatcher();
 
@@ -117,21 +116,22 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     for ( var index = 0; index < line.length; index ++ ) {
       data = line[ index ];
       if ( index == 0 ) this.setLineAt( data[ 1 ], data[ 2 ] );
-      else this.drawLineTo( data[ 1 ], data[ 2 ] );
+      else this.drawLineTo_( data[ 1 ], data[ 2 ] );
     }
+  }
+
+  Canvas.prototype.drawLineTo_ = function( nx, ny ) {
+    this.processing_.stroke( 30, 60 );
+    this.processing_.line( this.pos_.x, this.pos_.y, nx, ny );
+    this.pos_.x = nx;
+    this.pos_.y = ny;
   }
 
   Canvas.prototype.setLineAt = function( nx, ny ) {
     this.pos_.x = nx;
     this.pos_.y = ny;
-  }
-
-  Canvas.prototype.drawLineTo = function( nx, ny ) {
-    this.processing_.stroke( 30, 60 );
-    this.processing_.line( this.pos_.x, this.pos_.y, nx, ny );
-    this.pos_.x = nx;
-    this.pos_.y = ny;
     this.updateTurtle();
+    this.updateHistory();
   }
 
   Canvas.prototype.drawLineBy = function( nx, ny ) {
@@ -213,6 +213,14 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
 
   Canvas.prototype.$get = function() {
     return this.$canvas_;
+  }
+
+  Canvas.prototype.getX = function() {
+    return this.pos_.x;
+  }
+
+  Canvas.prototype.getY = function() {
+    return this.pos_.y;
   }
 
   Canvas.prototype.getWidth = function() {
