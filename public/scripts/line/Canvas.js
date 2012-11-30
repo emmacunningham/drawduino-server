@@ -9,7 +9,11 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.processing_ = new Processing( this.el_ );
 
     // Spatial.
-    this.size_ = { w : 0, h : 0 }, this.pos_ = { x: 0, y: 0 };
+    this.size_ = { w : 0, h : 0 };
+    this.pos_ = { x: 0, y: 0 };
+    this.min_ = { x: 0, y: 0 };
+    this.max_ = { x: 0, y: 0 };
+    this.width_ = 0; this.height_ = 0;
 
     // History.
     this.undoHistory_ = [];
@@ -33,12 +37,19 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.Event.CHANGE = "Canvas.Event.CHANGE";
 
   Canvas.prototype.reset = function() {
+    this.resetMinMax_();
     this.processing_.background( 250 );
     this.undoHistory_ = [];
     this.redoHistory_ = [];
     var d = new Date();
     this.startTime_ = d.getTime();
     this.updateHistory();
+  }
+
+  Canvas.prototype.resetMinMax_ = function() {
+    this.min_ = { x: 0, y: 0 };
+    this.max_ = { x: 0, y: 0 };
+    this.width_ = 0; this.height_ = 0;
   }
 
   /***** Updating *****/
@@ -48,7 +59,30 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.size_.w = this.$canvas_.width();
     this.size_.h = this.$canvas_.height();
     this.processing_.size( this.size_.w, this.size_.h );
+    this.updateLineWithMinMax_();
     this.draw( this.undoHistory_ );
+  }
+
+  Canvas.prototype.updateLineWithMinMax_ = function() {
+    var data;
+    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
+      this.centerData_( this.undoHistory_[ i ] );
+    }
+    for ( var i = 0; i < this.redoHistory_.length; i++ ) {
+      this.centerData_( this.redoHistory_[ i ] );
+    }
+    this.resetMinMax_();
+  }
+
+  Canvas.prototype.updateMinMax_ = function() {
+    var undoData = Canvas.findMinMax( this.undoHistory_ );
+    var redoData = Canvas.findMinMax( this.redoHistory_ );
+    this.min_.x = Math.min( undoData.min.x, redoData.min.x );
+    this.min_.y = Math.min( undoData.min.y, redoData.min.y );
+    this.max_.x = Math.max( undoData.max.x, redoData.max.x );
+    this.max_.y = Math.max( undoData.max.y, redoData.max.y );
+    this.width_ = this.max_.x - this.min_.x;
+    this.height_ = this.max_.y - this.min_.y;
   }
 
   Canvas.prototype.updateTurtle = function() {
@@ -94,6 +128,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.processing_.line( this.pos_.x, this.pos_.y, nx, ny );
     this.pos_.x = nx;
     this.pos_.y = ny;
+    this.updateMinMax_();
     this.updateTurtle();
   }
 
@@ -102,6 +137,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.processing_.line( this.pos_.x, this.pos_.y, this.pos_.x + nx, this.pos_.y + ny );
     this.pos_.x += nx;
     this.pos_.y += ny;
+    this.updateMinMax_();
     this.updateTurtle();
     this.updateHistory();
   }
@@ -112,6 +148,11 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.pos_.x = Math.round( this.size_.w * .5 );
     this.pos_.y = Math.round( this.size_.h * .5 );
     this.updateTurtle();
+  }
+
+  Canvas.prototype.centerData_ = function( data ) {
+    data[ 1 ] = data[ 1 ] - this.min_.x + ( this.size_.w - this.width_ ) * .5;
+    data[ 2 ]= data[ 2 ] - this.min_.y + ( this.size_.h - this.height_ ) * .5;
   }
 
   /***** Undoing/redoing *****/
