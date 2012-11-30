@@ -1,5 +1,5 @@
 /**
- * DigitalInput.js – Basic DigitalInput Controller0
+ * RotaryInput.js – Basic RotaryInput Controller0
  * This file is part of noduino (c) 2012 Sebastian Müller <c@semu.mp>
  *
  * @package     noduino
@@ -10,9 +10,9 @@
 
 define(function() {
   
-  function DigitalInput(options, Connector) {
-    if (false === (this instanceof DigitalInput)) {
-      return new DigitalInput(options); }  
+  function RotaryInput(options, Connector) {
+    if (false === (this instanceof RotaryInput)) {
+      return new RotaryInput(options); }  
     
     this.c      = Connector;
     this.pin    = this.c.normalizePin(options.pin);
@@ -23,47 +23,47 @@ define(function() {
     this.watch();
   }
 
-  DigitalInput.prototype.watch = function() {
-    this.c.watchDigitalIn(this);
+  RotaryInput.prototype.watch = function() {
+    this.c.watchRotaryIn(this);
   }
-
-  DigitalInput.prototype.setOn = function(callback) {
+/*
+  RotaryInput.prototype.setOn = function(callback) {
     this.pushed = true;
     this.emit('push');
     this.emit('change');    
   };
 
-  DigitalInput.prototype.push = function(callback) {
+  RotaryInput.prototype.push = function(callback) {
     this.setOn();
   };
 
-  DigitalInput.prototype.setOff = function(callback) {
+  RotaryInput.prototype.setOff = function(callback) {
     this.pushed = false;
     this.emit('release');
     this.emit('change');
   };
 
-  DigitalInput.prototype.release = function(callback) {
+  RotaryInput.prototype.release = function(callback) {
     this.setOff();
   };
   
-  DigitalInput.prototype.isOn = function() {
+  RotaryInput.prototype.isOn = function() {
     return this.pushed;
   };
 
-  DigitalInput.prototype.on = function(event, callback) {
+  RotaryInput.prototype.on = function(event, callback) {
     if (!this.events[event]) {
       this.events[event] = []; }
     this.events[event].push(callback);
   };
 
-  DigitalInput.prototype.emit = function(event, callback) {
+  RotaryInput.prototype.emit = function(event, callback) {
     if (!this.events[event]) {
       return; }
     for (var i = 0; i < this.events[event].length; i++) {
       this.events[event][i](this);
     }
   };
-
-  return DigitalInput;
+*/
+  return RotaryInput;
 });

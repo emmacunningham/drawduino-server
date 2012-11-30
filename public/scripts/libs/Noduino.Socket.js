@@ -41,7 +41,9 @@ define(function(require, exports, module) {
   SocketNoduino.prototype.TYPE_BUTTON   = 0x32;
   SocketNoduino.prototype.TYPE_ANALOGIN = 0x33;
   SocketNoduino.prototype.TYPE_DIGITALOUT = 0x34;
-  SocketNoduino.prototype.TYPE_SPEAKER = 0x35;
+  SocketNoduino.prototype.TYPE_DIGITALIN = 0x35;
+  SocketNoduino.prototype.TYPE_ROTARYIN = 0x36;      
+//  SocketNoduino.prototype.TYPE_SPEAKER = 0x35;
   
   SocketNoduino.prototype.current = function() {
     return this;
@@ -136,6 +138,17 @@ define(function(require, exports, module) {
     next(null, pin);
   }  
   
+  SocketNoduino.prototype.withDigitalIn = function(pin, next) {
+    this.pinMode(pin, this.MODE_IN);
+    next(null, pin);
+  }    
+  
+  SocketNoduino.prototype.withRotaryIn = function(pin, next) {
+    // Might want to set up a third MODE or maybe don't even call pinMode    
+    //this.pinMode(pin, this.MODE_IN);
+    next(null, pin);
+  }    
+  
   SocketNoduino.prototype.digitalWrite = function(pin, val, next) {
   	pin = this.normalizePin(pin);
   	val = this.normalizeVal(val);
@@ -151,6 +164,7 @@ define(function(require, exports, module) {
     
     this.analogRead(AnalogInput.pin);
     this.io.on('response', function(data) {
+
       if (data.type == 'analogRead' && data.pin == AnalogInput.pin) {
         that.log('socket-read', JSON.stringify(data));
         var event = {pin: data.pin, value: data.value*1};
@@ -169,8 +183,12 @@ define(function(require, exports, module) {
     this.pushSocket('serial', {'type': 'digitalRead', 'pin': this.normalizePin(pin)});
   }
   
+  SocketNoduino.prototype.rotaryRead = function (pin) {
+    this.pushSocket('serial', {'type': 'rotaryRead', 'pin': this.normalizePin(pin)});
+  }  
+  
   SocketNoduino.prototype.watchDigitalIn = function(DigitalIn) {
-    var that = this;
+    var that = this;    
     
     this.digitalRead(DigitalIn.pin);
     this.io.on('response', function(data) {
@@ -184,6 +202,19 @@ define(function(require, exports, module) {
       }
     });
   }
+  
+  SocketNoduino.prototype.watchRotaryIn = function(RotaryIn) {
+    var that = this;    
+    
+    this.rotaryRead(RotaryIn.pin);
+    this.io.on('response', function(data) {
+      if (data.type == 'rotaryRead' && data.pin == RotaryIn.pin) {
+        that.log('socket-read', JSON.stringify(data));
+        
+      }
+    });
+  }
+
   
   return SocketNoduino;  
 });

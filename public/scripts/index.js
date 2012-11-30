@@ -78,12 +78,20 @@ require( [
             // Listen to input.
             board.withAnalogInput( { pin: 'A0' }, createBoardInputHandler( drawObjX ) );
             board.withAnalogInput( { pin: 'A5' }, createBoardInputHandler( drawObjY ) );
+            board.withRotaryInput( { pin: '2' }, rotaryHandler() );
+            board.withRotaryInput( { pin: '3' }, rotaryHandler() );            
           });
         }
       }, 1000 );
     }
 
     var INPUT_FACTOR = .25;
+
+    var rotaryHandler = function(  ) {
+      return function( err, RotaryInput ) {
+        console.log('hey!');
+      }
+    }
 
     var createBoardInputHandler = function( drawObj ) {
       return function( err, AnalogInput ) {

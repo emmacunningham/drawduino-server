@@ -47,6 +47,10 @@ define(['./Board.js'], function (objBoard) {
   Noduino.prototype.watchDigitalIn = function(pin, callback) {
     this.c.watchDigitalIn(pin, callback);
   }
+  
+  Noduino.prototype.watchRotaryIn = function(pin, callback) {
+    this.c.watchRotaryIn(pin, callback);
+  }  
 
   Noduino.prototype.connect = function(options, callback) {
     this.log('connecting to noduino');
