@@ -38,8 +38,8 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.Event.CHANGE = "Canvas.Event.CHANGE";
 
   Canvas.prototype.reset = function() {
-    this.prevPos_ = { x: 0, y: 0 };
-    this.pos_ = { x: 0, y: 0 };
+    this.prevPos_.x = this.pos_.x;
+    this.prevPos_.y = this.pos_.y;
     this.processing_.background( 250 );
     this.undoHistory_ = [];
     this.redoHistory_ = [];
@@ -76,8 +76,8 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   }
 
   Canvas.prototype.updateTurtle = function() {
-    var x = this.$canvas_.offset().left + this.pos_.x - this.turtleSize_.w * .5;
-    var y = this.$canvas_.offset().top + this.pos_.y - this.turtleSize_.h * .5;
+    var x = this.center_.x + this.$canvas_.offset().left + this.pos_.x - this.turtleSize_.w * .5;
+    var y = this.center_.y + this.$canvas_.offset().top + this.pos_.y - this.turtleSize_.h * .5;
     this.$turtle_.offset( { left: x, top: y  } );
   }
 
@@ -121,23 +121,26 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
 
   Canvas.prototype.trace_ = function( line ) {
     this.processing_.background( 250 );
-    var data, prevData;
-    var centerX = this.center_.x;
-    var centerY = this.center_.y;
-    for ( var index = 1; index < line.length; index ++ ) {
+    var data;
+    var x = this.center_.x;
+    var y = this.center_.y;
+    this.processing_.stroke( 30, 60 );
+    for ( var index = 0; index < line.length; index ++ ) {
       data = line[ index ];
-      prevData = line[ index - 1 ];
-      this.processing_.line( centerX + prevData.x, centerY + prevData.y, centerX + data.x, centerY + data.y );
+      this.processing_.line( x, y, x + data[ 1 ], y + data[ 2 ] );
+      x += data[ 1 ];
+      y += data[ 2 ];
     }
   }
 
   Canvas.prototype.drawLineBy = function( nx, ny ) {
     this.processing_.stroke( 30, 60 );
     this.processing_.line(
-      this.center_.x + this.pos_.x,
-      this.center_.y + this.pos_.y,
-      this.center_.x + this.pos_.x + nx,
-      this.center_.y + this.pos_.y + ny );
+        this.center_.x + this.pos_.x,
+        this.center_.y + this.pos_.y,
+        this.center_.x + this.pos_.x + nx,
+        this.center_.y + this.pos_.y + ny
+      );
     this.prevPos_.x = this.pos_.x;
     this.prevPos_.y = this.pos_.y;
     this.pos_.x += nx;
