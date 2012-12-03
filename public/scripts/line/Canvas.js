@@ -11,7 +11,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     // Spatial.
     this.size_ = { w : 0, h : 0 };
     this.center_ = { x : 0, y : 0 };
-    this.prevPos_ = { x: 0, y: 0 };
+    //this.prevPos_ = { x: 0, y: 0 };
     this.pos_ = { x: 0, y: 0 };
     this.min_ = { x: 0, y: 0 };
     this.max_ = { x: 0, y: 0 };
@@ -38,8 +38,8 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.Event.CHANGE = "Canvas.Event.CHANGE";
 
   Canvas.prototype.reset = function() {
-    this.prevPos_.x = this.pos_.x;
-    this.prevPos_.y = this.pos_.y;
+    //this.prevPos_.x = this.pos_.x;
+    //this.prevPos_.y = this.pos_.y;
     this.processing_.background( 250 );
     this.undoHistory_ = [];
     this.redoHistory_ = [];
@@ -59,9 +59,8 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.center_.y = this.size_.h * .5;
     this.processing_.size( this.size_.w, this.size_.h );
     this.updateMinMax_();
-    this.centerLine_();
-    this.trace_( this.undoHistory_ );
     this.updateTurtle();
+    this.trace_( this.undoHistory_ );
   }
 
   Canvas.prototype.updateMinMax_ = function() {
@@ -82,13 +81,12 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   }
 
   Canvas.prototype.updateHistory = function() {
-    // To do
     var t = new Date();
     var time = t.getTime() - this.startTime_;
     this.startTime_ = t.getTime();
     time = Math.min( time, 1000 );
-    var x = this.pos_.x - this.prevPos_.x;
-    var y = this.pos_.y - this.prevPos_.y;
+    var x = this.pos_.x;
+    var y = this.pos_.y;
     this.undoHistory_.push( [ time, x, y ] );
     this.redoHistory_ = [];
     this.dispatchChange();
@@ -98,53 +96,31 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.dispatch( Canvas.Event.CHANGE );
   }
 
-  /***** Centering *****/
-
-  Canvas.prototype.centerLine_ = function() {
-    /*
-    var data;
-    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
-      this.centerData_( this.undoHistory_[ i ] );
-    }
-    for ( var i = 0; i < this.redoHistory_.length; i++ ) {
-      this.centerData_( this.redoHistory_[ i ] );
-    }
-    this.updateMinMax_();*/
-  }
-
-  Canvas.prototype.centerData_ = function( data ) {
-    //data[ 1 ] = data[ 1 ] - this.min_.x + ( this.size_.w - this.width_ ) * .5;
-    //data[ 2 ]= data[ 2 ] - this.min_.y + ( this.size_.h - this.height_ ) * .5;
-  }
-
   /***** Drawing *****/
 
   Canvas.prototype.trace_ = function( line ) {
     this.processing_.background( 250 );
-    var data;
+    var data, prevData;
     var x = this.center_.x;
     var y = this.center_.y;
     this.processing_.stroke( 30, 60 );
-    for ( var index = 0; index < line.length; index ++ ) {
+    for ( var index = 1; index < line.length; index ++ ) {
       data = line[ index ];
-      this.processing_.line( x, y, x + data[ 1 ], y + data[ 2 ] );
-      x += data[ 1 ];
-      y += data[ 2 ];
+      prevData = line[ index - 1 ];
+      this.processing_.line( x + prevData[ 1 ], y + prevData[ 2 ], x + data[ 1 ], y + data[ 2 ] );
     }
   }
 
-  Canvas.prototype.drawLineBy = function( nx, ny ) {
+  Canvas.prototype.drawLineTo = function( nx, ny ) {
     this.processing_.stroke( 30, 60 );
     this.processing_.line(
         this.center_.x + this.pos_.x,
         this.center_.y + this.pos_.y,
-        this.center_.x + this.pos_.x + nx,
-        this.center_.y + this.pos_.y + ny
+        this.center_.x + nx,
+        this.center_.y + ny
       );
-    this.prevPos_.x = this.pos_.x;
-    this.prevPos_.y = this.pos_.y;
-    this.pos_.x += nx;
-    this.pos_.y += ny;
+    this.pos_.x = nx;
+    this.pos_.y = ny;
     this.updateTurtle();
     this.updateHistory();
   }
@@ -162,6 +138,9 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.prototype.undo = function() {
       if ( this.undoHistory_.length > 1 ) {
         this.redoHistory_.push( this.undoHistory_.pop() );
+        this.pos_.x = this.undoHistory_[ this.undoHistory_.length - 1 ][ 1 ];
+        this.pos_.y = this.undoHistory_[ this.undoHistory_.length - 1 ][ 2 ];
+        this.updateTurtle();
         this.trace_( this.undoHistory_ );
         this.dispatchChange();
       }
@@ -170,6 +149,9 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.prototype.redo = function() {
     if ( this.redoHistory_.length > 0 ) {
       this.undoHistory_.push( this.redoHistory_.pop() );
+      this.pos_.x = this.undoHistory_[ this.undoHistory_.length - 1 ][ 1 ];
+      this.pos_.y = this.undoHistory_[ this.undoHistory_.length - 1 ][ 2 ];
+      this.updateTurtle();
       this.trace_( this.undoHistory_ );
       this.dispatchChange();
     }
@@ -246,7 +228,39 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   }
 
   Canvas.prototype.getHistoryString = function() {
-    var data = { 'min' : this.min_, 'max' : this.max_, 'line' : this.undoHistory_ };
+
+    var minX = 100000, minY = 1000000;
+    var maxX = -100000, maxY = -1000000;
+    var data;
+
+    // Get mins and maxes.
+    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
+      data = this.undoHistory_[ i ];
+      minX = Math.min( data[ 1 ], minX );
+      minY = Math.min( data[ 2 ], minY );
+      maxX = Math.max( data[ 1 ], maxX );
+      maxY = Math.max( data[ 2 ], maxY );
+    }
+    // Subtract offsets from each position to get centered position.
+    var offsetX = minX - ( this.size_.w - ( maxX - minX ) ) * .5;
+    var offsetY = minY - ( this.size_.h - ( maxY - minY ) ) * .5;
+    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
+      data = this.undoHistory_[ i ];
+      data[ 1 ] -= offsetX;
+      data[ 2 ] -= offsetY;
+    }
+    // Find relation of each point to center of screen.
+    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
+      data = this.undoHistory_[ i ];
+      data[ 1 ] = data[ 1 ] - this.center_.x;
+      data[ 2 ] = data[ 2 ] - this.center_.y;
+    }
+
+    var line = [];
+    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
+      line.push( [ this.undoHistory_[ i ][ 0 ], this.undoHistory_[ i ][ 1 ], this.undoHistory_[ i ][ 2 ] ] );
+    }
+    var data = { 'min' : this.min_, 'max' : this.max_, 'line' : line };
     return JSON.stringify( data );
   }
 

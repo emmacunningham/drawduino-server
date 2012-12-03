@@ -34,14 +34,14 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
   Playback.prototype.stepTo_ = function( index ) {
     // Data structure is [ time, x, y ]
     var data = this.line_[ index ];
-    this.canvas_.drawLineBy( data[ 1 ], data[ 2 ] );
+    this.canvas_.drawLineTo( data[ 1 ], data[ 2 ] );
     if ( index < this.line_.length - 1 ) {
       var self = this;
       this.timeout_ = setTimeout( function() {
         self.stepTo_( index + 1 );
       }, data[ 0 ] / this.speed_ );
     } else {
-      //this.stop();
+      this.stop();
     }
   }
 
