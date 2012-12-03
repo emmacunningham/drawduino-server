@@ -195,25 +195,35 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     return this.redoHistory_;
   }
 
+  Canvas.prototype.getMin = function() {
+    var obj = { x: 1000000, y: 1000000 };
+    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
+      obj.x = Math.min( obj.x, this.undoHistory_[ i ][ 1 ] );
+      obj.y = Math.min( obj.y, this.undoHistory_[ i ][ 2 ] );
+    }
+    return obj;
+  }
+
+  Canvas.prototype.getMax = function() {
+    var obj = { x: -1000000, y: -1000000 };
+    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
+      obj.x = Math.max( obj.x, this.undoHistory_[ i ][ 1 ] );
+      obj.y = Math.max( obj.y, this.undoHistory_[ i ][ 2 ] );
+    }
+    return obj;
+  }
+
   Canvas.prototype.getLine = function() {
     var line = [];
     for ( var i = 0; i < this.undoHistory_.length; i++ ) {
       line.push( [ this.undoHistory_[ i ][ 0 ], this.undoHistory_[ i ][ 1 ], this.undoHistory_[ i ][ 2 ] ] );
     }
-    var minX = 1000000, minY = 1000000;
-    var maxX = -1000000, maxY = -1000000;
-    var data;
     // Get mins and maxes.
-    for ( var i = 0; i < line.length; i++ ) {
-      data = line[ i ];
-      minX = Math.min( data[ 1 ], minX );
-      minY = Math.min( data[ 2 ], minY );
-      maxX = Math.max( data[ 1 ], maxX );
-      maxY = Math.max( data[ 2 ], maxY );
-    }
+    var min = this.getMin();
+    var max = this.getMax();
     // Subtract offsets from each position to get centered position.
-    var offsetX = minX - ( this.size_.w - ( maxX - minX ) ) * .5;
-    var offsetY = minY - ( this.size_.h - ( maxY - minY ) ) * .5;
+    var offsetX = min.x - ( this.size_.w - ( max.x - min.x ) ) * .5;
+    var offsetY = min.y - ( this.size_.h - ( max.y - min.y ) ) * .5;
     for ( var i = 0; i < line.length; i++ ) {
       data = line[ i ];
       data[ 1 ] -= offsetX;
@@ -227,7 +237,21 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   }
 
   Canvas.prototype.getImageString = function() {
-    return canvas.toDataURL();
+    // Get mins and maxes.
+    var min = this.getMin();
+    var max = this.getMax();
+    // Reorient relative to top left corner.
+    min.x += this.center_.x;
+    max.x += this.center_.x;
+    min.y += this.center_.y;
+    max.y += this.center_.y;
+    // Make copy canvas.
+    var copy = document.createElement('canvas');
+    copy.width = max.x - min.x;
+    copy.height = max.y - min.y;
+    var copyContext = copy.getContext('2d');
+    copyContext.drawImage( this.el_, min.x, min.y, copy.width, copy.height, 0, 0, copy.width, copy.height );
+    return copy.toDataURL();
   }
 
   Canvas.prototype.getIsPlayingHistory = function() {

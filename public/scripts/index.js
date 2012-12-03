@@ -182,7 +182,12 @@ require( [
 
       // Testing.
       canvas.$get().click( function( e ) {
-        console.log(canvas.getImageString())
+        var img = new Image();
+        img.src = canvas.getImageString();
+        document.body.appendChild(img);
+
+        //console.log(canvas.getLine());
+
         //var range = 40;
         //testInput( drawObjX, Math.round( Math.random() * range - range * .5 ) );
         //testInput( drawObjY, Math.round( Math.random() * range - range * .5 ) );
