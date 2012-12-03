@@ -11,7 +11,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     // Spatial.
     this.size_ = { w : 0, h : 0 };
     this.center_ = { x : 0, y : 0 };
-    //this.prevPos_ = { x: 0, y: 0 };
     this.pos_ = { x: 0, y: 0 };
     this.min_ = { x: 0, y: 0 };
     this.max_ = { x: 0, y: 0 };
@@ -38,14 +37,11 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.Event.CHANGE = "Canvas.Event.CHANGE";
 
   Canvas.prototype.reset = function() {
-    //this.prevPos_.x = this.pos_.x;
-    //this.prevPos_.y = this.pos_.y;
     this.processing_.background( 250 );
     this.undoHistory_ = [];
     this.redoHistory_ = [];
     var d = new Date();
     this.startTime_ = d.getTime();
-    this.updateHistory();
     this.updateSize();
   }
 
@@ -109,6 +105,17 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
       prevData = line[ index - 1 ];
       this.processing_.line( x + prevData[ 1 ], y + prevData[ 2 ], x + data[ 1 ], y + data[ 2 ] );
     }
+  }
+
+  Canvas.prototype.drawLineBy = function( nx, ny ) {
+    this.drawLineTo( this.pos_.x + nx, this.pos_.y + ny );
+  }
+
+  Canvas.prototype.moveLineTo = function( nx, ny ) {
+    this.pos_.x = nx;
+    this.pos_.y = ny;
+    this.updateTurtle();
+    this.updateHistory();
   }
 
   Canvas.prototype.drawLineTo = function( nx, ny ) {
