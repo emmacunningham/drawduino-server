@@ -12,9 +12,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.size_ = { w : 0, h : 0 };
     this.center_ = { x : 0, y : 0 };
     this.pos_ = { x: 0, y: 0 };
-    this.min_ = { x: 0, y: 0 };
-    this.max_ = { x: 0, y: 0 };
-    this.width_ = 0; this.height_ = 0;
 
     // History.
     this.undoHistory_ = [];
@@ -54,20 +51,8 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.center_.x = this.size_.w * .5;
     this.center_.y = this.size_.h * .5;
     this.processing_.size( this.size_.w, this.size_.h );
-    this.updateMinMax_();
     this.updateTurtle();
     this.trace_( this.undoHistory_ );
-  }
-
-  Canvas.prototype.updateMinMax_ = function() {
-    var undoData = Canvas.findMinMax( this.undoHistory_ );
-    var redoData = Canvas.findMinMax( this.redoHistory_ );
-    this.min_.x = Math.min( undoData.min.x, redoData.min.x );
-    this.min_.y = Math.min( undoData.min.y, redoData.min.y );
-    this.max_.x = Math.max( undoData.max.x, redoData.max.x );
-    this.max_.y = Math.max( undoData.max.y, redoData.max.y );
-    this.width_ = this.max_.x - this.min_.x;
-    this.height_ = this.max_.y - this.min_.y;
   }
 
   Canvas.prototype.updateTurtle = function() {
@@ -132,14 +117,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.updateHistory();
   }
 
-  /***** Turtle *****/
-
-  Canvas.prototype.centerTurtle = function() {
-    this.pos_.x = Math.round( this.size_.w * .5 );
-    this.pos_.y = Math.round( this.size_.h * .5 );
-    this.updateTurtle();
-  }
-
   /***** Undoing/redoing *****/
 
   Canvas.prototype.undo = function() {
@@ -182,22 +159,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     clearInterval( this.redoInterval_ );
   }
 
-   /***** Utility *****/
-
-  Canvas.findMinMax = function( line ) {
-    var min = { x: 100000, y: 1000000 };
-    var max = { x: 0, y: 0 };
-    var data;
-    for ( var i = 0; i < line.length; i++ ) {
-      data = line[ i ];
-      if ( data[ 1 ] < min.x ) min.x = data[ 1 ];
-      if ( data[ 2 ] < min.y ) min.y = data[ 2 ];
-      if ( data[ 1 ] > max.x ) max.x = data[ 1 ];
-      if ( data[ 2 ] > max.y ) max.y = data[ 2 ];
-    }
-    return { min: min, max: max };
-  }
-
   /***** Setters *****/
 
   Canvas.prototype.setIsPlayingHistory = function( val ) {
@@ -234,15 +195,17 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     return this.redoHistory_;
   }
 
-  Canvas.prototype.getHistoryString = function() {
-
-    var minX = 100000, minY = 1000000;
-    var maxX = -100000, maxY = -1000000;
-    var data;
-
-    // Get mins and maxes.
+  Canvas.prototype.getLine = function() {
+    var line = [];
     for ( var i = 0; i < this.undoHistory_.length; i++ ) {
-      data = this.undoHistory_[ i ];
+      line.push( [ this.undoHistory_[ i ][ 0 ], this.undoHistory_[ i ][ 1 ], this.undoHistory_[ i ][ 2 ] ] );
+    }
+    var minX = 1000000, minY = 1000000;
+    var maxX = -1000000, maxY = -1000000;
+    var data;
+    // Get mins and maxes.
+    for ( var i = 0; i < line.length; i++ ) {
+      data = line[ i ];
       minX = Math.min( data[ 1 ], minX );
       minY = Math.min( data[ 2 ], minY );
       maxX = Math.max( data[ 1 ], maxX );
@@ -251,24 +214,16 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     // Subtract offsets from each position to get centered position.
     var offsetX = minX - ( this.size_.w - ( maxX - minX ) ) * .5;
     var offsetY = minY - ( this.size_.h - ( maxY - minY ) ) * .5;
-    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
-      data = this.undoHistory_[ i ];
+    for ( var i = 0; i < line.length; i++ ) {
+      data = line[ i ];
       data[ 1 ] -= offsetX;
       data[ 2 ] -= offsetY;
-    }
-    // Find relation of each point to center of screen.
-    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
-      data = this.undoHistory_[ i ];
+      // Set each position to be relative to center of screen.
       data[ 1 ] = data[ 1 ] - this.center_.x;
       data[ 2 ] = data[ 2 ] - this.center_.y;
     }
-
-    var line = [];
-    for ( var i = 0; i < this.undoHistory_.length; i++ ) {
-      line.push( [ this.undoHistory_[ i ][ 0 ], this.undoHistory_[ i ][ 1 ], this.undoHistory_[ i ][ 2 ] ] );
-    }
-    var data = { 'min' : this.min_, 'max' : this.max_, 'line' : line };
-    return JSON.stringify( data );
+    var obj = { 'line' : line };
+    return JSON.stringify( obj );
   }
 
   Canvas.prototype.getImageString = function() {

@@ -4,10 +4,12 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
     Dispatcher.call(this);
 
     this.canvas_ = canvas;
-    this.line_, this.min_, this._max_, this.width_, this.height_;
+    this.line_;
     this.timeout_;
 
-    this.speed_ = 2;
+    // Warning: speeding up playback also speeds up the preserved history.
+    // So repeatedly saving a playback and replaying it again will end up with a super-sped-up drawing.
+    this.speed_ = 1;
   };
   Playback.prototype = new Dispatcher();
 
@@ -16,14 +18,10 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
   Playback.Event.STOP = "Playback.Event.STOP";
 
   Playback.prototype.play = function( lineStr ) {
+    // To do: Save a current drawing so we don't lose work by playing back another drawing.
     var data = JSON.parse( lineStr );
     this.line_ = data.line;
     if ( this.line_.length > 2 ) {
-      this.min_ = data.min;
-      this.max_ = data.max;
-      this.width_ = this.max_.x - this.min_.x;
-      this.height_ = this.max_.y - this.min_.y;
-      // Temp copy histories over
       this.canvas_.reset();
       this.canvas_.setIsPlayingHistory( true );
       this.stepTo_( 0 );
