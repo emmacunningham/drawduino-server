@@ -19,6 +19,7 @@ define(function() {
     this.pushed = false;
     this.events = {};
     this.value  = null;
+    this.tolerance  = 3;  
     
     this.watch();
   }
@@ -26,44 +27,48 @@ define(function() {
   RotaryInput.prototype.watch = function() {
     this.c.watchRotaryIn(this);
   }
-/*
-  RotaryInput.prototype.setOn = function(callback) {
-    this.pushed = true;
-    this.emit('push');
-    this.emit('change');    
-  };
-
-  RotaryInput.prototype.push = function(callback) {
-    this.setOn();
-  };
-
-  RotaryInput.prototype.setOff = function(callback) {
-    this.pushed = false;
-    this.emit('release');
-    this.emit('change');
-  };
-
-  RotaryInput.prototype.release = function(callback) {
-    this.setOff();
-  };
   
-  RotaryInput.prototype.isOn = function() {
-    return this.pushed;
-  };
-
-  RotaryInput.prototype.on = function(event, callback) {
-    if (!this.events[event]) {
-      this.events[event] = []; }
-    this.events[event].push(callback);
-  };
-
-  RotaryInput.prototype.emit = function(event, callback) {
+  /**
+   * Run binded events for given event
+   * @param string event
+   */
+  RotaryInput.prototype.emit = function(event) {
     if (!this.events[event]) {
       return; }
     for (var i = 0; i < this.events[event].length; i++) {
       this.events[event][i](this);
     }
   };
-*/
+  
+  /**
+   * Bind event to RotaryInput
+   * @param string event name of event
+   * @param function callback
+   */
+  RotaryInput.prototype.on = function(event, callback) {
+    if (!this.events[event]) {
+      this.events[event] = []; }
+    this.events[event].push(callback);
+  };
+
+  /**
+   * Update value of RotaryInput 
+   * @param integer value
+   * @param function callback
+   */
+  RotaryInput.prototype.set = function(value) {
+    var tmp = this.value - value;
+    if (tmp > (-1 * this.tolerance) && tmp < this.tolerance) {
+      return; }
+          
+    if (this.value != value) {
+      this.value = value; 
+      this.emit('change');
+    }
+  };
+  
+
+
+
   return RotaryInput;
 });

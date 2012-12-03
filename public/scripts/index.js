@@ -75,30 +75,27 @@ require( [
         if (!Noduino || !Noduino.connected) {
           Noduino = new NoduinoObj({debug: true, host: 'http://localhost:8090', logger: {container: '#connection-log'}}, Connector, Logger);
           Noduino.connect(function(err, board) {
-            // Listen to input.
-            board.withAnalogInput( { pin: 'A0' }, createBoardInputHandler( drawObjX ) );
-            board.withAnalogInput( { pin: 'A5' }, createBoardInputHandler( drawObjY ) );
-            board.withRotaryInput( { pin: '2' }, rotaryHandler() );
-            board.withRotaryInput( { pin: '3' }, rotaryHandler() );            
+            // Listen to rotary input.
+            // Specify which interrupt pin is attached to the rotary encoder.
+            // For drawObjX, make sure right pin is attached to interrupt.
+            // For drawObjY, make sure left pin is attached to interrupt.
+            board.withRotaryInput( { pin: '3' }, createBoardInputHandler( drawObjX )  );
+            board.withRotaryInput( { pin: '2' }, createBoardInputHandler( drawObjY ) );            
+            
+            
           });
         }
       }, 1000 );
     }
 
-    var INPUT_FACTOR = .25;
-
-    var rotaryHandler = function(  ) {
-      return function( err, RotaryInput ) {
-        console.log('hey!');
-      }
-    }
-
+    var INPUT_FACTOR = 5;
     var createBoardInputHandler = function( drawObj ) {
-      return function( err, AnalogInput ) {
-        AnalogInput.on('change', function(a) {
+      return function( err, RotaryInput ) {
+        RotaryInput.on('change', function(a) {
           if ( !canvas.getIsPlayingHistory() ) {
-            var potValue = AnalogInput.value;
-            drawObj.cur = potValue;
+            var rotaryValue = RotaryInput.value;
+            console.log(RotaryInput.value);            
+            drawObj.cur = rotaryValue;
             if ( drawObj.prev != undefined ) {
               drawObj.delta += ( drawObj.cur - drawObj.prev) * INPUT_FACTOR;
             }
@@ -107,7 +104,7 @@ require( [
         });
       }
     }
-
+    
     var showToolbar = function( show ) {
       if ( show ) $(UI.TOOLBAR).show();
       else $(UI.TOOLBAR).hide();

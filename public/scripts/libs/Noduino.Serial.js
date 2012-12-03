@@ -81,8 +81,14 @@ define(function(require, exports, module) {
     }, 50);
   
     this.current().on('data', function(m) {
+      console.log('Noduino.Serial.watchAnalogIn: ' + m);
+
+      
       m = m.split('::');
       var event = {pin: that.normalizePin(m[0]), 'state': m[1]*1};
+      
+      console.log('Noduino.Serial.watchAnalogIn SPLIT: ' + m);
+      
       
       if (callback) {
         return callback(event); }      
@@ -122,10 +128,10 @@ define(function(require, exports, module) {
     this.current().on('data', function(m) {
       m = m.split('::');
       var event = {pin: that.normalizePin(m[0]), 'state': m[1]*1};
-      
+
       if (callback) {
         return callback(event); }
-        
+
       if (event.pin == DigitalIn.pin) {
         if (event.state == 0 && DigitalIn.isOn()) {
           DigitalIn.setOff();
@@ -143,6 +149,24 @@ define(function(require, exports, module) {
     setInterval(function () {
       that.rotaryRead(RotaryIn.pin);
     }, 50);
+ 
+    this.current().on('data', function(m) {
+      console.log('Noduino.Serial.watchRotaryIn: ' + m);
+
+      m = m.split('::');
+      
+      if (m.length < 3) {      
+        console.log('Noduino.Serial.watchRotaryIn SPLIT: ' + m);
+        var event = {pin: that.normalizePin(m[0]), 'state': m[1]*1};
+
+        if (callback) {
+          return callback(event); }
+
+          if (event.pin == RotaryIn.pin) {
+            RotaryIn.set(event.state);
+          }    
+      }
+    });
     
     
   };  
