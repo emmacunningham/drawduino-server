@@ -145,7 +145,7 @@ define(function(require, exports, module) {
   
   SocketNoduino.prototype.withRotaryIn = function(pin, next) {
     // Might want to set up a third MODE or maybe don't even call pinMode    
-    //this.pinMode(pin, this.MODE_IN);
+    this.pinMode(pin, this.MODE_IN);
     next(null, pin);
   }    
   
@@ -210,7 +210,10 @@ define(function(require, exports, module) {
     this.io.on('response', function(data) {
       if (data.type == 'rotaryRead' && data.pin == RotaryIn.pin) {
         that.log('socket-read', JSON.stringify(data));
-        
+        var event = {pin: data.pin, value: data.value*1};
+        if (event.pin == RotaryIn.pin) {
+          RotaryIn.set(event.value);
+        }        
       }
     });
   }

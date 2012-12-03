@@ -40,11 +40,15 @@ define(['socket.io', 'public/scripts/libs/Noduino', 'public/scripts/libs/Noduino
             break;
           case 'analogRead':
             var curPin = data.pin;
-            that.current().watchAnalogIn({'pin': data.pin}, function(m) {
+            that.current().watchAnalogIn({'pin': data.pin}, function(m) {                
               if (!m.pin || m.pin == null || m.pin == NaN) {
                 return; }
 
               if (m.state != that.pinCache[m.pin] && curPin == m.pin) {
+
+                for (key in m) {
+                  console.log('analog ' + key + ' ' + m[key]);
+                }
                 socket.emit('response', {'type': 'analogRead', 'pin': m.pin, 'value': m.state});
                 that.pinCache[m.pin] = m.state;
               }
@@ -65,13 +69,22 @@ define(['socket.io', 'public/scripts/libs/Noduino', 'public/scripts/libs/Noduino
           
           case 'rotaryRead':
             var curPin = data.pin;
-            that.current().watchRotaryIn({'pin': data.pin}, function(m) {
-              if (!m.pin || m.pin == null || m.pin == NaN) {
+            that.current().watchRotaryIn({'pin': data.pin}, function(m) {              
+              if (!m.pin || m.pin == null || m.pin == NaN || m.state == NaN || m.state == null) {
                 return; }
+              if (m.state != that.pinCache[m.pin] && curPin == m.pin && !isNaN(m.state)) {
+                
+                // Make sure we're getting spiked values
+                var delta = that.pinCache[m.pin] - m.state;
+                if (!(delta > 25) && !(delta < -25)) {
+                
+                  for (key in m) {
+                    console.log('rotary ' + key + ' ' + m[key]);
+                  }
 
-              if (m.state != that.pinCache[m.pin] && curPin == m.pin) {
-                socket.emit('response', {'type': 'rotaryRead', 'pin': m.pin, 'value': m.state});
-                that.pinCache[m.pin] = m.state;
+                  socket.emit('response', {'type': 'rotaryRead', 'pin': m.pin, 'value': m.state});
+                  that.pinCache[m.pin] = m.state;
+                }
               }
             });
           break;          
