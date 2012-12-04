@@ -6,6 +6,7 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
     this.canvas_ = canvas;
     this.line_;
     this.timeout_;
+    this.isPlaying_ = false;
 
     // Warning: speeding up playback also speeds up the preserved history.
     // So repeatedly saving a playback and replaying it again will end up with a super-sped-up drawing.
@@ -23,8 +24,8 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
     this.line_ = data.line;
     if ( this.line_.length > 2 ) {
       this.canvas_.reset();
-      this.canvas_.setIsPlayingHistory( true );
       this.stepTo_( 0 );
+      this.isPlaying_ = true;
       this.dispatch( Playback.Event.START );
     }
   }
@@ -45,10 +46,13 @@ define(['scripts/lfl/events/Dispatcher.js', './Canvas.js'], function( Dispatcher
   }
 
   Playback.prototype.stop = function() {
+    this.isPlaying_ = false;
     clearTimeout( this.timeout_ );
-    this.canvas_.setIsPlayingHistory( false );
-    //this.canvas_.trace( this.canvas_.getUndoHistory() );
     this.dispatch( Playback.Event.STOP );
+  }
+
+  Playback.prototype.getIsPlaying = function() {
+    return this.isPlaying_;
   }
 
   return Playback;

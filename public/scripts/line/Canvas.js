@@ -19,7 +19,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.startTime_, this.historyTimeout_;
     this.undoInterval_, this.redoInterval_;
     this.replayHistory_;
-    this.isPlayingHistory_ = false;
 
     // Turtle.
     this.$turtle_ = $( '#turtle' );
@@ -77,6 +76,14 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     this.dispatch( Canvas.Event.CHANGE );
   }
 
+  /***** Loading *****/
+
+  Canvas.prototype.load = function( lineStr ) {
+    var data = JSON.parse( lineStr );
+    this.undoHistory_ = data.line;
+    this.updateChange_();
+  }
+
   /***** Drawing *****/
 
   Canvas.prototype.trace_ = function( line ) {
@@ -122,23 +129,23 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
   Canvas.prototype.undo = function() {
       if ( this.undoHistory_.length > 1 ) {
         this.redoHistory_.push( this.undoHistory_.pop() );
-        this.pos_.x = this.undoHistory_[ this.undoHistory_.length - 1 ][ 1 ];
-        this.pos_.y = this.undoHistory_[ this.undoHistory_.length - 1 ][ 2 ];
-        this.updateTurtle();
-        this.trace_( this.undoHistory_ );
-        this.dispatchChange();
+        this.updateChange_();
       }
     }
 
   Canvas.prototype.redo = function() {
     if ( this.redoHistory_.length > 0 ) {
       this.undoHistory_.push( this.redoHistory_.pop() );
-      this.pos_.x = this.undoHistory_[ this.undoHistory_.length - 1 ][ 1 ];
-      this.pos_.y = this.undoHistory_[ this.undoHistory_.length - 1 ][ 2 ];
-      this.updateTurtle();
-      this.trace_( this.undoHistory_ );
-      this.dispatchChange();
+      this.updateChange_();
     }
+  }
+
+  Canvas.prototype.updateChange_ = function() {
+    this.pos_.x = this.undoHistory_[ this.undoHistory_.length - 1 ][ 1 ];
+    this.pos_.y = this.undoHistory_[ this.undoHistory_.length - 1 ][ 2 ];
+    this.updateTurtle();
+    this.trace_( this.undoHistory_ );
+    this.dispatchChange();
   }
 
   Canvas.prototype.startUndoing = function() {
@@ -157,12 +164,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
 
   Canvas.prototype.stopRedoing = function() {
     clearInterval( this.redoInterval_ );
-  }
-
-  /***** Setters *****/
-
-  Canvas.prototype.setIsPlayingHistory = function( val ) {
-    this.isPlayingHistory_ = val;
   }
 
   /***** Getters *****/
@@ -213,7 +214,7 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     return obj;
   }
 
-  Canvas.prototype.getLine = function() {
+  Canvas.prototype.getLineString = function() {
     var line = [];
     for ( var i = 0; i < this.undoHistory_.length; i++ ) {
       line.push( [ this.undoHistory_[ i ][ 0 ], this.undoHistory_[ i ][ 1 ], this.undoHistory_[ i ][ 2 ] ] );
@@ -252,10 +253,6 @@ define(['scripts/lfl/events/Dispatcher.js'], function( Dispatcher ) {
     var copyContext = copy.getContext('2d');
     copyContext.drawImage( this.el_, min.x, min.y, copy.width, copy.height, 0, 0, copy.width, copy.height );
     return copy.toDataURL();
-  }
-
-  Canvas.prototype.getIsPlayingHistory = function() {
-    return this.isPlayingHistory_;
   }
 
   return Canvas;
