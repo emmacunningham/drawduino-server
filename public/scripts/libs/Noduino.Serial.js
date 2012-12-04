@@ -41,7 +41,7 @@ define(function(require, exports, module) {
 
   SerialNoduino.prototype.connect = function(options, next) {
     /** This is Server Code: Just works with Node.js **/
-    var Board = require('../../../duino/lib/board.js');
+    var Board = require('../../../du/lib/board.js');
     var that = this;
     new Board({'debug': this.options.debug || false}, function(err, board) {
       if (err) { return next(new Error('Unable to connect')); }
