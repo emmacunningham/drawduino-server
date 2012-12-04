@@ -88,7 +88,7 @@ require( [
       }, 1000 );
     }
 
-    var INPUT_FACTOR = 5;
+    var INPUT_FACTOR = 5  ;
     var createBoardInputHandler = function( drawObj ) {
       return function( err, RotaryInput ) {
         RotaryInput.on('change', function(a) {
